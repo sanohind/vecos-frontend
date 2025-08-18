@@ -1,117 +1,131 @@
 <!-- src/views/RegisterView.vue -->
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full space-y-8">
-      <div>
-        <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Create your account
-        </h2>
-        <p class="mt-2 text-center text-sm text-gray-600">
+  <div class="min-h-screen flex items-center justify-center bg-gray-50">
+    <div class="w-full max-w-sm">
+      <!-- Header Section -->
+      <div class="text-center mb-8">
+        <h1 class="text-2xl font-semibold text-gray-900 tracking-tight">
+          Create Account
+        </h1>
+        <p class="mt-2 text-sm text-gray-600">
           Join Vehicle Control System
         </p>
       </div>
-      
-      <form class="mt-8 space-y-6" @submit.prevent="handleRegister">
-        <div class="space-y-4">
-          <!-- Name -->
+
+      <!-- Register Form -->
+      <div class="bg-white border border-gray-200 rounded-lg p-8 shadow-sm">
+        <form @submit.prevent="handleRegister" class="space-y-5">
+          <!-- Name Field -->
           <div>
-            <label for="name" class="block text-sm font-medium text-gray-700">
+            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
               Full Name
             </label>
             <input
               id="name"
               v-model="form.name"
-              name="name"
               type="text"
               required
-              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              :class="{ 'border-red-500': errors.name }"
+              class="block w-full px-3 py-2.5 border border-gray-300 rounded-md text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+              :class="{ 'border-red-300 focus:ring-red-500': errors.name }"
+              style="--focus-ring-color: #0A2856;"
+              @focus="$event.target.style.setProperty('--tw-ring-color', '#0A2856')"
               placeholder="Enter your full name"
             />
-            <span v-if="errors.name" class="text-red-500 text-xs mt-1">{{ errors.name[0] }}</span>
+            <p v-if="errors.name" class="text-red-600 text-xs mt-1">
+              {{ errors.name[0] }}
+            </p>
           </div>
 
-          <!-- Email -->
+          <!-- Email Field -->
           <div>
-            <label for="email" class="block text-sm font-medium text-gray-700">
-              Email Address
+            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+              Email
             </label>
             <input
               id="email"
               v-model="form.email"
-              name="email"
               type="email"
               autocomplete="email"
               required
-              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              :class="{ 'border-red-500': errors.email }"
-              placeholder="Enter your email address"
+              class="block w-full px-3 py-2.5 border border-gray-300 rounded-md text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+              :class="{ 'border-red-300 focus:ring-red-500': errors.email }"
+              style="--focus-ring-color: #0A2856;"
+              @focus="$event.target.style.setProperty('--tw-ring-color', '#0A2856')"
+              placeholder="Enter your email"
             />
-            <span v-if="errors.email" class="text-red-500 text-xs mt-1">{{ errors.email[0] }}</span>
+            <p v-if="errors.email" class="text-red-600 text-xs mt-1">
+              {{ errors.email[0] }}
+            </p>
           </div>
-          
-          <!-- Password -->
+
+          <!-- Password Field -->
           <div>
-            <label for="password" class="block text-sm font-medium text-gray-700">
+            <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
               Password
             </label>
             <input
               id="password"
               v-model="form.password"
-              name="password"
               type="password"
               autocomplete="new-password"
               required
-              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              :class="{ 'border-red-500': errors.password }"
+              class="block w-full px-3 py-2.5 border border-gray-300 rounded-md text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+              :class="{ 'border-red-300 focus:ring-red-500': errors.password }"
+              style="--focus-ring-color: #0A2856;"
+              @focus="$event.target.style.setProperty('--tw-ring-color', '#0A2856')"
               placeholder="Enter your password"
             />
-            <span v-if="errors.password" class="text-red-500 text-xs mt-1">{{ errors.password[0] }}</span>
-            <p class="mt-1 text-xs text-gray-500">
-              Password must be at least 8 characters long
+            <p v-if="errors.password" class="text-red-600 text-xs mt-1">
+              {{ errors.password[0] }}
+            </p>
+            <p class="text-gray-500 text-xs mt-1">
+              Minimum 8 characters required
             </p>
           </div>
-          
-          <!-- Confirm Password -->
+
+          <!-- Confirm Password Field -->
           <div>
-            <label for="password_confirmation" class="block text-sm font-medium text-gray-700">
+            <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">
               Confirm Password
             </label>
             <input
               id="password_confirmation"
               v-model="form.password_confirmation"
-              name="password_confirmation"
               type="password"
               autocomplete="new-password"
               required
-              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              :class="{ 'border-red-500': errors.password_confirmation }"
+              class="block w-full px-3 py-2.5 border border-gray-300 rounded-md text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+              :class="{ 'border-red-300 focus:ring-red-500': errors.password_confirmation }"
+              style="--focus-ring-color: #0A2856;"
+              @focus="$event.target.style.setProperty('--tw-ring-color', '#0A2856')"
               placeholder="Confirm your password"
             />
-            <span v-if="errors.password_confirmation" class="text-red-500 text-xs mt-1">
+            <p v-if="errors.password_confirmation" class="text-red-600 text-xs mt-1">
               {{ errors.password_confirmation[0] }}
-            </span>
+            </p>
           </div>
-        </div>
 
-        <!-- Error Message -->
-        <div v-if="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          {{ errorMessage }}
-        </div>
+          <!-- Error Message -->
+          <div v-if="errorMessage" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
+            {{ errorMessage }}
+          </div>
 
-        <!-- Success Message -->
-        <div v-if="successMessage" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-          {{ successMessage }}
-        </div>
+          <!-- Success Message -->
+          <div v-if="successMessage" class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md text-sm">
+            {{ successMessage }}
+          </div>
 
-        <div>
+          <!-- Submit Button -->
           <button
             type="submit"
             :disabled="loading"
-            class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+            class="w-full text-white py-2.5 px-4 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            style="background-color: #0A2856; hover:background-color: #083144;"
+            @mouseover="$event.target.style.backgroundColor = '#083144'"
+            @mouseout="$event.target.style.backgroundColor = '#0A2856'"
           >
-            <span v-if="loading">
-              <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <span v-if="loading" class="flex items-center justify-center">
+              <svg class="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
@@ -119,17 +133,18 @@
             </span>
             <span v-else>Create Account</span>
           </button>
-        </div>
+        </form>
 
-        <div class="text-center">
+        <!-- Login Link -->
+        <div class="mt-6 text-center">
           <router-link 
             to="/login" 
-            class="font-medium text-indigo-600 hover:text-indigo-500"
+            class="text-sm text-gray-600 hover:text-gray-900 transition-colors"
           >
-            Already have an account? Sign in
+            Already have an account? <span class="font-medium">Sign in</span>
           </router-link>
         </div>
-      </form>
+      </div>
     </div>
   </div>
 </template>
