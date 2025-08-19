@@ -1,31 +1,42 @@
 <!-- src/components/Booking/EditBookingModal.vue -->
 <template>
   <div class="fixed inset-0 z-50 overflow-y-auto">
-    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+    <div
+      class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
+    >
       <!-- Background overlay -->
-      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="$emit('close')"></div>
+      <div
+        class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+        @click="$emit('close')"
+      ></div>
 
       <!-- Modal panel -->
-      <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
-        <div class="sm:flex sm:items-start">
-          <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
-            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
-              Edit Booking
-            </h3>
-            
+      <div
+        class="inline-block align-bottom bg-white rounded-xl px-6 pt-6 pb-6 text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-8"
+      >
+        <div class="w-full">
+          <div class="text-center sm:text-left">
+            <h3 class="text-xl font-semibold text-gray-900 mb-6">Edit Booking</h3>
+
             <!-- Vehicle Info -->
-            <div class="mb-4 p-3 bg-gray-50 rounded-lg">
-              <div class="text-sm text-gray-600">
-                <div><strong>Vehicle:</strong> {{ booking.vehicle?.brand }} {{ booking.vehicle?.model }}</div>
-                <div><strong>Plate:</strong> {{ booking.vehicle?.plat_no }}</div>
+            <div class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-100">
+              <div class="text-sm text-gray-600 space-y-1">
+                <div>
+                  <span class="font-medium text-gray-700">Vehicle:</span>
+                  {{ booking.vehicle?.brand }} {{ booking.vehicle?.model }}
+                </div>
+                <div>
+                  <span class="font-medium text-gray-700">Plate:</span>
+                  {{ booking.vehicle?.plat_no }}
+                </div>
               </div>
             </div>
 
             <!-- Edit Form -->
-            <form @submit.prevent="handleSubmit">
+            <form @submit.prevent="handleSubmit" class="space-y-5">
               <!-- Start Date & Time -->
-              <div class="mb-4">
-                <label for="start_time" class="block text-sm font-medium text-gray-700 mb-1">
+              <div>
+                <label for="start_time" class="block text-sm font-medium text-gray-700 mb-2">
                   Start Date & Time
                 </label>
                 <input
@@ -34,17 +45,17 @@
                   type="datetime-local"
                   required
                   :min="minDateTime"
-                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  :class="{ 'border-red-500': errors.start_time }"
+                  class="w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 text-sm transition-colors"
+                  :class="{ 'border-red-500 focus:ring-red-500': errors.start_time }"
                 />
-                <span v-if="errors.start_time" class="text-red-500 text-xs mt-1">
+                <span v-if="errors.start_time" class="text-red-500 text-xs mt-1 block">
                   {{ errors.start_time[0] }}
                 </span>
               </div>
 
               <!-- End Date & Time -->
-              <div class="mb-4">
-                <label for="end_time" class="block text-sm font-medium text-gray-700 mb-1">
+              <div>
+                <label for="end_time" class="block text-sm font-medium text-gray-700 mb-2">
                   End Date & Time
                 </label>
                 <input
@@ -53,63 +64,107 @@
                   type="datetime-local"
                   required
                   :min="form.start_time || minDateTime"
-                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  :class="{ 'border-red-500': errors.end_time }"
+                  class="w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 text-sm transition-colors"
+                  :class="{ 'border-red-500 focus:ring-red-500': errors.end_time }"
                 />
-                <span v-if="errors.end_time" class="text-red-500 text-xs mt-1">
+                <span v-if="errors.end_time" class="text-red-500 text-xs mt-1 block">
                   {{ errors.end_time[0] }}
                 </span>
               </div>
 
+              <!-- Destination -->
+              <div>
+                <label for="destination" class="block text-sm font-medium text-gray-700 mb-2">
+                  Destination
+                </label>
+                <input
+                  id="destination"
+                  v-model="form.destination"
+                  type="text"
+                  required
+                  class="w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 text-sm transition-colors"
+                  :class="{ 'border-red-500 focus:ring-red-500': errors.destination }"
+                  placeholder="Enter destination"
+                />
+                <span v-if="errors.destination" class="text-red-500 text-xs mt-1 block">
+                  {{ errors.destination[0] }}
+                </span>
+              </div>
+
               <!-- Purpose/Notes -->
-              <div class="mb-4">
-                <label for="purpose" class="block text-sm font-medium text-gray-700 mb-1">
-                  Purpose/Notes (Optional)
+              <div>
+                <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">
+                  Notes (Optional)
                 </label>
                 <textarea
-                  id="purpose"
-                  v-model="form.purpose"
+                  id="notes"
+                  v-model="form.notes"
                   rows="3"
-                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  class="w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 text-sm transition-colors resize-none"
                   placeholder="Enter the purpose of booking..."
                 ></textarea>
               </div>
 
               <!-- Duration Info -->
-              <div v-if="duration" class="mb-4 p-3 bg-blue-50 rounded-lg">
+              <div v-if="duration" class="p-4 bg-blue-50 border border-blue-100 rounded-lg">
                 <div class="text-sm text-blue-800">
-                  <strong>Duration:</strong> {{ duration }}
+                  <span class="font-medium">Duration:</span> {{ duration }}
                 </div>
               </div>
 
               <!-- Error Message -->
-              <div v-if="errorMessage" class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+              <div
+                v-if="errorMessage"
+                class="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm"
+              >
                 {{ errorMessage }}
               </div>
 
               <!-- Form Actions -->
-              <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
+              <div
+                class="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-3 space-y-3 space-y-reverse sm:space-y-0 pt-4"
+              >
+                <button
+                  type="button"
+                  @click="$emit('close')"
+                  class="w-full sm:w-auto px-6 py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors"
+                >
+                  Cancel
+                </button>
+
                 <button
                   type="submit"
                   :disabled="loading"
-                  class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm disabled:opacity-50"
+                  class="w-full sm:w-auto px-6 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  style="background-color: #0a2856"
+                  :style="{ 'background-color': loading ? '#6B7280' : '#0A2856' }"
+                  @mouseover="!loading && ($event.target.style.backgroundColor = '#08204A')"
+                  @mouseout="!loading && ($event.target.style.backgroundColor = '#0A2856')"
                 >
-                  <span v-if="loading">
-                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <span v-if="loading" class="flex items-center justify-center">
+                    <svg
+                      class="animate-spin -ml-1 mr-3 h-4 w-4 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        class="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        stroke-width="4"
+                      ></circle>
+                      <path
+                        class="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
                     </svg>
                     Updating...
                   </span>
                   <span v-else>Update Booking</span>
-                </button>
-                
-                <button
-                  type="button"
-                  @click="$emit('close')"
-                  class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm"
-                >
-                  Cancel
                 </button>
               </div>
             </form>
@@ -123,23 +178,25 @@
 <script>
 import { ref, computed, watch } from 'vue'
 import { bookingAPI } from '@/services/api'
+import { toInputLocal, getDurationParts } from '@/utils/datetime'
 
 export default {
   name: 'EditBookingModal',
   props: {
     booking: {
       type: Object,
-      required: true
-    }
+      required: true,
+    },
   },
   emits: ['close', 'updated'],
   setup(props, { emit }) {
     const form = ref({
       start_time: '',
       end_time: '',
-      purpose: ''
+      notes: '',
+      destination: '',
     })
-    
+
     const errors = ref({})
     const errorMessage = ref('')
     const loading = ref(false)
@@ -154,48 +211,35 @@ export default {
     // Calculate duration between start and end time
     const duration = computed(() => {
       if (!form.value.start_time || !form.value.end_time) return null
-      
-      const start = new Date(form.value.start_time)
-      const end = new Date(form.value.end_time)
-      const diff = end - start
-      
-      if (diff <= 0) return 'Invalid duration'
-      
-      const hours = Math.floor(diff / (1000 * 60 * 60))
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-      
-      if (hours > 0 && minutes > 0) {
-        return `${hours} hours ${minutes} minutes`
-      } else if (hours > 0) {
-        return `${hours} hours`
-      } else {
-        return `${minutes} minutes`
-      }
+      const { hours, minutes } = getDurationParts(form.value.start_time, form.value.end_time)
+      if (hours < 0 || (hours === 0 && minutes <= 0)) return 'Invalid duration'
+      if (hours > 0 && minutes > 0) return `${hours} hours ${minutes} minutes`
+      if (hours > 0) return `${hours} hours`
+      return `${minutes} minutes`
     })
 
     // Initialize form with booking data
-    watch(() => props.booking, (newBooking) => {
-      if (newBooking) {
-        // Convert datetime strings to local datetime format for input
-        const startDate = new Date(newBooking.start_time)
-        const endDate = new Date(newBooking.end_time)
-        
-        startDate.setMinutes(startDate.getMinutes() - startDate.getTimezoneOffset())
-        endDate.setMinutes(endDate.getMinutes() - endDate.getTimezoneOffset())
-        
-        form.value = {
-          start_time: startDate.toISOString().slice(0, 16),
-          end_time: endDate.toISOString().slice(0, 16),
-          purpose: newBooking.purpose || ''
+    watch(
+      () => props.booking,
+      (newBooking) => {
+        if (newBooking) {
+          // Convert datetime strings to local datetime format for input (YYYY-MM-DDTHH:mm)
+          form.value = {
+            start_time: toInputLocal(newBooking.start_time),
+            end_time: toInputLocal(newBooking.end_time),
+            notes: newBooking.notes || '',
+            destination: newBooking.destination || '',
+          }
         }
-      }
-    }, { immediate: true })
+      },
+      { immediate: true },
+    )
 
     const handleSubmit = async () => {
       loading.value = true
       errors.value = {}
       errorMessage.value = ''
-      
+
       try {
         // Validate form
         if (!form.value.start_time || !form.value.end_time) {
@@ -205,7 +249,7 @@ export default {
 
         const startDate = new Date(form.value.start_time)
         const endDate = new Date(form.value.end_time)
-        
+
         if (endDate <= startDate) {
           errorMessage.value = 'End time must be after start time'
           return
@@ -217,7 +261,7 @@ export default {
         }
 
         const response = await bookingAPI.update(props.booking.id, form.value)
-        
+
         if (response.data.code === 200) {
           emit('updated', response.data.data)
         } else {
@@ -245,8 +289,8 @@ export default {
       loading,
       minDateTime,
       duration,
-      handleSubmit
+      handleSubmit,
     }
-  }
+  },
 }
 </script>

@@ -13,7 +13,10 @@
         <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
           <button
             @click="showStats = true"
-            class="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
+            class="inline-flex items-center justify-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 sm:w-auto"
+            style="background-color: #0A2856; hover:background-color: #083147; focus:ring-color: #0A2856;"
+            onmouseover="this.style.backgroundColor='#083147'"
+            onmouseout="this.style.backgroundColor='#0A2856'"
           >
             View Statistics
           </button>
@@ -27,7 +30,10 @@
           <select
             id="status-filter"
             v-model="filters.status"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm h-10 px-4 pr-10 text-gray-900"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm h-10 px-4 pr-10 text-gray-900"
+            style="border-color: #0A2856; focus:border-color: #0A2856; focus:ring-color: #0A2856;"
+            onfocus="this.style.borderColor='#0A2856'; this.style.boxShadow='0 0 0 1px #0A2856'"
+            onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'"
           >
             <option value="" class="text-gray-900">All Status</option>
             <option value="pending" class="text-gray-900">Pending</option>
@@ -45,7 +51,10 @@
           <select
             id="date-filter"
             v-model="filters.dateRange"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm h-10 px-4 pr-10 text-gray-900"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm h-10 px-4 pr-10 text-gray-900"
+            style="border-color: #0A2856; focus:border-color: #0A2856; focus:ring-color: #0A2856;"
+            onfocus="this.style.borderColor='#0A2856'; this.style.boxShadow='0 0 0 1px #0A2856'"
+            onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'"
           >
             <option value="" class="text-gray-900">All Time</option>
             <option value="today" class="text-gray-900">Today</option>
@@ -61,14 +70,20 @@
             v-model="filters.search"
             type="text"
             placeholder="Search bookings..."
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm h-10 px-4"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm h-10 px-4"
+            style="border-color: #0A2856; focus:border-color: #0A2856; focus:ring-color: #0A2856;"
+            onfocus="this.style.borderColor='#0A2856'; this.style.boxShadow='0 0 0 1px #0A2856'"
+            onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'"
           />
         </div>
 
         <div class="flex items-end">
           <button
             @click="resetFilters"
-            class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2"
+            style="focus:ring-color: #0A2856;"
+            onfocus="this.style.boxShadow='0 0 0 2px #0A2856'"
+            onblur="this.style.boxShadow='none'"
           >
             Reset Filters
           </button>
@@ -124,7 +139,8 @@
                       <div class="flex items-center">
                         <div class="h-10 w-10 flex-shrink-0">
                           <div
-                            class="h-10 w-10 rounded-full bg-indigo-500 flex items-center justify-center"
+                            class="h-10 w-10 rounded-full flex items-center justify-center"
+                            style="background-color: #0a2856"
                           >
                             <span class="text-sm font-medium leading-none text-white">
                               {{ booking.user?.name?.charAt(0).toUpperCase() || '?' }}
@@ -172,7 +188,10 @@
                       <div class="flex space-x-2">
                         <button
                           @click="viewBooking(booking)"
-                          class="text-indigo-600 hover:text-indigo-900"
+                          class="hover:underline"
+                          style="color: #0a2856"
+                          onmouseover="this.style.color='#083147'"
+                          onmouseout="this.style.color='#0A2856'"
                         >
                           View
                         </button>
@@ -265,10 +284,15 @@
                   @click="changePage(page)"
                   :class="[
                     page === pagination.current_page
-                      ? 'z-10 bg-indigo-50 border-indigo-500 text-indigo-600'
+                      ? 'z-10 border text-white'
                       : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50',
                     'relative inline-flex items-center px-4 py-2 border text-sm font-medium',
                   ]"
+                  :style="
+                    page === pagination.current_page
+                      ? 'background-color: #0A2856; border-color: #0A2856;'
+                      : ''
+                  "
                 >
                   {{ page }}
                 </button>
@@ -333,13 +357,20 @@
             </div>
             <div class="flex justify-between">
               <span class="text-sm text-gray-600">Completed:</span>
-              <span class="text-sm font-medium text-blue-600">{{ stats.completed || 0 }}</span>
+              <span class="text-sm font-medium" style="color: #0a2856">{{
+                stats.completed || 0
+              }}</span>
             </div>
           </div>
           <div class="mt-6">
             <button
               @click="showStats = false"
-              class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
+              class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:text-sm"
+              style="background-color: #0A2856; focus:ring-color: #0A2856;"
+              onmouseover="this.style.backgroundColor='#083147'"
+              onmouseout="this.style.backgroundColor='#0A2856'"
+              onfocus="this.style.boxShadow='0 0 0 2px #0A2856'"
+              onblur="this.style.boxShadow='none'"
             >
               Close
             </button>
@@ -376,6 +407,7 @@ import AppLayout from '@/components/Layout/AppLayout.vue'
 import ViewBookingModal from '@/components/Booking/ViewBookingModal.vue'
 import ConfirmActionModal from '@/components/Booking/ConfirmActionModal.vue'
 import { bookingAPI } from '@/services/api'
+import { formatDateID, formatTimeID, parseDbDateTimeToLocalDate } from '@/utils/datetime'
 
 export default {
   name: 'BookingsView',
@@ -458,7 +490,7 @@ export default {
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
 
         filteredBookings = filteredBookings.filter((booking) => {
-          const bookingDate = new Date(booking.start_time)
+          const bookingDate = parseDbDateTimeToLocalDate(booking.start_time)
           switch (filters.value.dateRange) {
             case 'today':
               return bookingDate >= today
@@ -621,11 +653,7 @@ export default {
     const formatDate = (dateString) => {
       if (!dateString) return 'No date'
       try {
-        return new Date(dateString).toLocaleDateString('id-ID', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        })
+        return formatDateID(dateString)
       } catch (error) {
         console.error('Error formatting date:', error)
         return dateString
@@ -635,10 +663,7 @@ export default {
     const formatTime = (dateString) => {
       if (!dateString) return '--:--'
       try {
-        return new Date(dateString).toLocaleTimeString('id-ID', {
-          hour: '2-digit',
-          minute: '2-digit',
-        })
+        return formatTimeID(dateString)
       } catch (error) {
         console.error('Error formatting time:', error)
         return dateString

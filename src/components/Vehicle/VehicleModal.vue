@@ -12,19 +12,19 @@
 
       <!-- Modal panel -->
       <div
-        class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6"
+        class="inline-block align-bottom bg-white rounded-xl px-6 pt-6 pb-6 text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-8"
       >
-        <div class="sm:flex sm:items-start">
-          <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
-            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-6">
+        <div class="w-full">
+          <div class="text-center sm:text-left">
+            <h3 class="text-xl font-semibold text-gray-900 mb-6">
               {{ isEdit ? 'Edit Vehicle' : 'Add New Vehicle' }}
             </h3>
 
             <!-- Vehicle Form -->
-            <form @submit.prevent="handleSubmit" class="space-y-4">
+            <form @submit.prevent="handleSubmit" class="space-y-5">
               <!-- Vehicle ID (only for create) -->
               <div v-if="!isEdit">
-                <label for="vehicle_id" class="block text-sm font-medium text-gray-700 mb-1">
+                <label for="vehicle_id" class="block text-sm font-medium text-gray-700 mb-2">
                   Vehicle ID
                 </label>
                 <input
@@ -33,10 +33,10 @@
                   type="text"
                   required
                   placeholder="Enter unique vehicle ID"
-                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm h-10 px-4"
-                  :class="{ 'border-red-500': errors.vehicle_id }"
+                  class="w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 text-sm transition-colors"
+                  :class="{ 'border-red-500 focus:ring-red-500': errors.vehicle_id }"
                 />
-                <span v-if="errors.vehicle_id" class="text-red-500 text-xs mt-1">
+                <span v-if="errors.vehicle_id" class="text-red-500 text-xs mt-1 block">
                   {{ errors.vehicle_id[0] }}
                 </span>
                 <p class="text-xs text-gray-500 mt-1">Must be unique across all vehicles</p>
@@ -44,7 +44,7 @@
 
               <!-- Plate Number -->
               <div>
-                <label for="plat_no" class="block text-sm font-medium text-gray-700 mb-1">
+                <label for="plat_no" class="block text-sm font-medium text-gray-700 mb-2">
                   Plate Number
                 </label>
                 <input
@@ -53,17 +53,17 @@
                   type="text"
                   required
                   placeholder="e.g., B 1234 ABC"
-                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm h-10 px-4"
-                  :class="{ 'border-red-500': errors.plat_no }"
+                  class="w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 text-sm transition-colors"
+                  :class="{ 'border-red-500 focus:ring-red-500': errors.plat_no }"
                 />
-                <span v-if="errors.plat_no" class="text-red-500 text-xs mt-1">
+                <span v-if="errors.plat_no" class="text-red-500 text-xs mt-1 block">
                   {{ errors.plat_no[0] }}
                 </span>
               </div>
 
               <!-- Brand -->
               <div>
-                <label for="brand" class="block text-sm font-medium text-gray-700 mb-1">
+                <label for="brand" class="block text-sm font-medium text-gray-700 mb-2">
                   Brand
                 </label>
                 <div class="relative">
@@ -72,8 +72,8 @@
                       id="brand"
                       v-model="form.brand"
                       required
-                      class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm h-10 appearance-none cursor-pointer bg-white px-4 pr-12 text-gray-900"
-                      :class="{ 'border-red-500': errors.brand }"
+                      class="w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 text-sm appearance-none cursor-pointer bg-white pr-10 transition-colors"
+                      :class="{ 'border-red-500 focus:ring-red-500': errors.brand }"
                       @focus="openBrandSelect"
                     >
                       <option value="" disabled>Select a brand</option>
@@ -82,7 +82,7 @@
                       </option>
                     </select>
                     <div
-                      class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none mt-1"
+                      class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none"
                     >
                       <svg
                         class="h-5 w-5 text-gray-400"
@@ -97,26 +97,26 @@
                         />
                       </svg>
                     </div>
-                    <div v-show="isSearching" class="absolute inset-x-0 top-0 mt-1">
+                    <div v-show="isSearching" class="absolute inset-x-0 top-0 z-10">
                       <input
                         type="text"
                         v-model="brandSearchQuery"
                         placeholder="Type to search brands..."
-                        class="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm h-11 px-4"
+                        class="w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 text-sm transition-colors"
                         @input="filterBrandSuggestions"
                         ref="searchInput"
                       />
                     </div>
                   </div>
                 </div>
-                <span v-if="errors.brand" class="text-red-500 text-xs mt-1">
+                <span v-if="errors.brand" class="text-red-500 text-xs mt-1 block">
                   {{ errors.brand[0] }}
                 </span>
               </div>
 
               <!-- Model -->
               <div>
-                <label for="model" class="block text-sm font-medium text-gray-700 mb-1">
+                <label for="model" class="block text-sm font-medium text-gray-700 mb-2">
                   Model
                 </label>
                 <input
@@ -125,31 +125,31 @@
                   type="text"
                   required
                   placeholder="e.g., Avanza, Civic, Pajero"
-                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm h-10 px-4"
-                  :class="{ 'border-red-500': errors.model }"
+                  class="w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 text-sm transition-colors"
+                  :class="{ 'border-red-500 focus:ring-red-500': errors.model }"
                 />
-                <span v-if="errors.model" class="text-red-500 text-xs mt-1">
+                <span v-if="errors.model" class="text-red-500 text-xs mt-1 block">
                   {{ errors.model[0] }}
                 </span>
               </div>
 
               <!-- Status -->
               <div>
-                <label for="status" class="block text-sm font-medium text-gray-700 mb-1">
+                <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
                   Status
                 </label>
                 <select
                   id="status"
                   v-model="form.status"
                   required
-                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm h-10 px-4 pr-10 text-gray-900"
-                  :class="{ 'border-red-500': errors.status }"
+                  class="w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 text-sm pr-10 transition-colors"
+                  :class="{ 'border-red-500 focus:ring-red-500': errors.status }"
                 >
                   <option value="" class="text-gray-900">Select Status</option>
                   <option value="active" class="text-gray-900">Active</option>
                   <option value="inactive" class="text-gray-900">Inactive</option>
                 </select>
-                <span v-if="errors.status" class="text-red-500 text-xs mt-1">
+                <span v-if="errors.status" class="text-red-500 text-xs mt-1 block">
                   {{ errors.status[0] }}
                 </span>
                 <p class="text-xs text-gray-500 mt-1">Only active vehicles can be booked</p>
@@ -158,7 +158,7 @@
               <!-- Error Message -->
               <div
                 v-if="errorMessage"
-                class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded"
+                class="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm"
               >
                 {{ errorMessage }}
               </div>
@@ -166,21 +166,33 @@
               <!-- Success Message -->
               <div
                 v-if="successMessage"
-                class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded"
+                class="p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm"
               >
                 {{ successMessage }}
               </div>
 
               <!-- Form Actions -->
-              <div class="mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
+              <div class="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-3 space-y-3 space-y-reverse sm:space-y-0 pt-4">
+                <button
+                  type="button"
+                  @click="$emit('close')"
+                  class="w-full sm:w-auto px-6 py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors"
+                >
+                  Cancel
+                </button>
+
                 <button
                   type="submit"
                   :disabled="loading"
-                  class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm disabled:opacity-50"
+                  class="w-full sm:w-auto px-6 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  style="background-color: #0A2856; focus:ring-color: #0A2856;"
+                  :style="{ 'background-color': loading ? '#6B7280' : '#0A2856', 'hover:background-color': loading ? '#6B7280' : '#08204A' }"
+                  @mouseover="!loading && ($event.target.style.backgroundColor = '#08204A')"
+                  @mouseout="!loading && ($event.target.style.backgroundColor = '#0A2856')"
                 >
-                  <span v-if="loading">
+                  <span v-if="loading" class="flex items-center justify-center">
                     <svg
-                      class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                      class="animate-spin -ml-1 mr-3 h-4 w-4 text-white"
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
@@ -202,14 +214,6 @@
                     {{ isEdit ? 'Updating...' : 'Creating...' }}
                   </span>
                   <span v-else>{{ isEdit ? 'Update Vehicle' : 'Create Vehicle' }}</span>
-                </button>
-
-                <button
-                  type="button"
-                  @click="$emit('close')"
-                  class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm"
-                >
-                  Cancel
                 </button>
               </div>
             </form>

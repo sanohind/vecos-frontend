@@ -11,7 +11,8 @@
         <div class="mt-4 sm:mt-0">
           <button
             @click="showBookingModal = true"
-            class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-opacity-50"
+            style="background-color: #0a2856; focus-ring-color: #0a2856"
           >
             <svg
               class="-ml-1 mr-2 h-5 w-5"
@@ -36,7 +37,10 @@
           <div class="p-5">
             <div class="flex items-center">
               <div class="flex-shrink-0">
-                <div class="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
+                <div
+                  class="w-8 h-8 rounded-md flex items-center justify-center"
+                  style="background-color: #0a2856"
+                >
                   <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                     <path
                       fill-rule="evenodd"
@@ -135,34 +139,68 @@
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-4">
             <div>
               <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
-              <select
-                id="status"
-                v-model="filters.status"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm h-10 px-4 pr-10 text-gray-900"
-              >
-                <option value="" class="text-gray-900">All Status</option>
-                <option value="pending" class="text-gray-900">Pending</option>
-                <option value="approved" class="text-gray-900">Approved</option>
-                <option value="rejected" class="text-gray-900">Rejected</option>
-                <option value="completed" class="text-gray-900">Completed</option>
-                <option value="cancelled" class="text-gray-900">Cancelled</option>
-              </select>
+              <div class="relative">
+                <select
+                  id="status"
+                  v-model="filters.status"
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm h-10 px-4 pr-8 text-gray-900 appearance-none"
+                >
+                  <option value="" class="text-gray-900">All Status</option>
+                  <option value="pending" class="text-gray-900">Pending</option>
+                  <option value="approved" class="text-gray-900">Approved</option>
+                  <option value="rejected" class="text-gray-900">Rejected</option>
+                  <option value="completed" class="text-gray-900">Completed</option>
+                  <option value="cancelled" class="text-gray-900">Cancelled</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg
+                    class="w-4 h-4 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </div>
+              </div>
             </div>
 
             <div>
               <label for="date-from" class="block text-sm font-medium text-gray-700"
                 >Date Range</label
               >
-              <select
-                id="date-from"
-                v-model="filters.dateFrom"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm h-10 px-4 pr-10 text-gray-900"
-              >
-                <option value="" class="text-gray-900">All Time</option>
-                <option value="today" class="text-gray-900">Today</option>
-                <option value="week" class="text-gray-900">This Week</option>
-                <option value="month" class="text-gray-900">This Month</option>
-              </select>
+              <div class="relative">
+                <select
+                  id="date-from"
+                  v-model="filters.dateFrom"
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm h-10 px-4 pr-8 text-gray-900 appearance-none"
+                >
+                  <option value="" class="text-gray-900">All Time</option>
+                  <option value="today" class="text-gray-900">Today</option>
+                  <option value="week" class="text-gray-900">This Week</option>
+                  <option value="month" class="text-gray-900">This Month</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg
+                    class="w-4 h-4 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </div>
+              </div>
             </div>
 
             <div>
@@ -172,14 +210,15 @@
                 v-model="filters.search"
                 type="text"
                 placeholder="Search bookings..."
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm h-10 px-4"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm h-10 px-4"
               />
             </div>
 
             <div class="flex items-end">
               <button
                 @click="resetFilters"
-                class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-opacity-50"
+                style="focus:ring-color: #0A2856"
               >
                 Reset Filters
               </button>
@@ -193,7 +232,8 @@
         <div class="px-4 py-5 sm:p-6">
           <div v-if="loading" class="text-center py-8">
             <div
-              class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500 mx-auto"
+              class="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto"
+              style="border-color: #0a2856"
             ></div>
             <p class="mt-2 text-gray-500">Loading bookings...</p>
           </div>
@@ -222,63 +262,64 @@
               :key="booking.id"
               class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
             >
-              <div class="flex items-center justify-between">
-                <div class="flex-1">
-                  <div class="flex items-center space-x-4">
-                    <div>
-                      <h3 class="text-lg font-medium text-gray-900">
-                        {{ booking.vehicle?.brand }} {{ booking.vehicle?.model }}
-                      </h3>
-                      <p class="text-sm text-gray-500">{{ booking.vehicle?.plat_no }}</p>
-                    </div>
-                    <div>
-                      <span
-                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                        :class="getStatusClass(booking.status)"
-                      >
-                        {{ booking.status }}
-                      </span>
-                    </div>
+              <!-- Header with Vehicle Info and Status -->
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center space-x-4">
+                  <div>
+                    <h3 class="text-lg font-medium text-gray-900">
+                      {{ booking.vehicle?.brand }} {{ booking.vehicle?.model }}
+                    </h3>
+                    <p class="text-sm text-gray-500">{{ booking.vehicle?.plat_no }}</p>
                   </div>
-
-                  <div class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <p class="text-sm text-gray-600">
-                        <strong>Start:</strong> {{ formatDateTime(booking.start_time) }}
-                      </p>
-                      <p class="text-sm text-gray-600">
-                        <strong>End:</strong> {{ formatDateTime(booking.end_time) }}
-                      </p>
-                    </div>
-                    <div>
-                      <p class="text-sm text-gray-600">
-                        <strong>Duration:</strong>
-                        {{ getDuration(booking.start_time, booking.end_time) }}
-                      </p>
-                      <p v-if="booking.purpose" class="text-sm text-gray-600">
-                        <strong>Purpose:</strong> {{ booking.purpose }}
-                      </p>
-                    </div>
+                  <div>
+                    <span
+                      class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                      :class="getStatusClass(booking.status)"
+                    >
+                      {{ booking.status }}
+                    </span>
                   </div>
                 </div>
 
-                <div class="flex-shrink-0 ml-4">
-                  <div class="flex space-x-2">
-                    <button
-                      v-if="booking.status === 'pending'"
-                      @click="editBooking(booking)"
-                      class="text-indigo-600 hover:text-indigo-900 text-sm"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      v-if="booking.status === 'pending'"
-                      @click="deleteBooking(booking)"
-                      class="text-red-600 hover:text-red-900 text-sm"
-                    >
-                      Cancel
-                    </button>
-                  </div>
+                <!-- Action Buttons - Only show if pending -->
+                <div v-if="booking.status === 'pending'" class="flex space-x-3">
+                  <button
+                    @click="editBooking(booking)"
+                    class="text-sm font-medium hover:opacity-80"
+                    style="color: #0a2856"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    @click="deleteBooking(booking)"
+                    class="text-red-600 hover:text-red-900 text-sm font-medium"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+
+              <!-- Booking Details Grid -->
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <!-- Time Information -->
+                <div class="space-y-1">
+                  <p class="text-sm text-gray-600">
+                    <strong>Start:</strong> {{ formatDateTime(booking.start_time) }}
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    <strong>End:</strong> {{ formatDateTime(booking.end_time) }}
+                  </p>
+                </div>
+
+                <!-- Duration and Purpose -->
+                <div class="space-y-1">
+                  <p class="text-sm text-gray-600">
+                    <strong>Duration:</strong>
+                    {{ getDuration(booking.start_time, booking.end_time) }}
+                  </p>
+                  <p v-if="booking.purpose" class="text-sm text-gray-600">
+                    <strong>Purpose:</strong> {{ booking.purpose }}
+                  </p>
                 </div>
               </div>
             </div>
@@ -353,6 +394,7 @@
 <script>
 import { ref, computed, onMounted, watch } from 'vue'
 import { bookingAPI } from '@/services/api'
+import { parseDbDateTimeToLocalDate, formatDateTimeID, getDurationParts } from '@/utils/datetime'
 import AppLayout from '@/components/Layout/AppLayout.vue'
 import BookingModal from '@/components/Booking/BookingModal.vue'
 import VehicleSelectionModal from '@/components/Booking/VehicleSelectionModal.vue'
@@ -420,11 +462,38 @@ export default {
       }
 
       if (filters.value.dateFrom) {
-        const fromDate = new Date(filters.value.dateFrom)
-        filtered = filtered.filter((booking) => new Date(booking.start_time) >= fromDate)
+        const now = new Date()
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+        const startOfWeek = new Date(today)
+        startOfWeek.setDate(today.getDate() - today.getDay())
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+
+        let fromDate = null
+        switch (filters.value.dateFrom) {
+          case 'today':
+            fromDate = today
+            break
+          case 'week':
+            fromDate = startOfWeek
+            break
+          case 'month':
+            fromDate = startOfMonth
+            break
+          default:
+            fromDate = null
+        }
+
+        if (fromDate) {
+          filtered = filtered.filter(
+            (booking) => parseDbDateTimeToLocalDate(booking.start_time) >= fromDate,
+          )
+        }
       }
 
-      return filtered.sort((a, b) => new Date(b.start_time) - new Date(a.start_time))
+      return filtered.sort(
+        (a, b) =>
+          parseDbDateTimeToLocalDate(b.start_time) - parseDbDateTimeToLocalDate(a.start_time),
+      )
     })
 
     const pendingBookings = computed(() => {
@@ -465,30 +534,14 @@ export default {
     }
 
     const formatDateTime = (dateString) => {
-      return new Date(dateString).toLocaleString('id-ID', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      })
+      return formatDateTimeID(dateString)
     }
 
     const getDuration = (startTime, endTime) => {
-      const start = new Date(startTime)
-      const end = new Date(endTime)
-      const diff = end - start
-
-      const hours = Math.floor(diff / (1000 * 60 * 60))
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-
-      if (hours > 0 && minutes > 0) {
-        return `${hours}h ${minutes}m`
-      } else if (hours > 0) {
-        return `${hours}h`
-      } else {
-        return `${minutes}m`
-      }
+      const { hours, minutes } = getDurationParts(startTime, endTime)
+      if (hours > 0 && minutes > 0) return `${hours}h ${minutes}m`
+      if (hours > 0) return `${hours}h`
+      return `${minutes}m`
     }
 
     const getStatusClass = (status) => {
@@ -578,3 +631,21 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+/* Custom CSS untuk focus states yang menggunakan warna kustom */
+input:focus,
+select:focus {
+  border-color: #0a2856 !important;
+  box-shadow: 0 0 0 3px rgba(10, 40, 86, 0.1) !important;
+}
+
+button:focus {
+  box-shadow: 0 0 0 3px rgba(10, 40, 86, 0.3) !important;
+}
+
+/* Style untuk select dropdown */
+select {
+  background-image: none;
+}
+</style>
