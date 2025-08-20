@@ -264,6 +264,7 @@
 
 <script>
 import { ref, computed, onMounted, watch } from 'vue'
+import { usePolling } from '@/utils/usePolling'
 import { vehicleAPI } from '@/services/api'
 import AppLayout from '@/components/Layout/AppLayout.vue'
 import VehicleModal from '@/components/Vehicle/VehicleModal.vue'
@@ -416,6 +417,9 @@ export default {
     onMounted(() => {
       fetchVehicles()
     })
+
+    // Auto-refresh vehicle list every 30s while visible
+    usePolling(() => fetchVehicles(), { intervalMs: 30000, immediate: false })
 
     const handleBookingCreated = () => {
       showBookingModal.value = false

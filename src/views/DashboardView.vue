@@ -215,11 +215,11 @@
           <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
             <h3 class="text-lg font-medium text-gray-900">Available Vehicles</h3>
             <router-link
-                to="/vehicles"
-                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
-              >
-                Browse
-              </router-link>
+              to="/vehicles"
+              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+            >
+              Browse
+            </router-link>
           </div>
           <div class="p-6">
             <div v-if="availableVehicles.length === 0" class="text-center py-8">
@@ -321,15 +321,15 @@
               Refresh
             </button>
             <router-link
-                v-if="!authStore.isAdmin"
-                to="/my-bookings"
-                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors"
-                style="background-color: #0a2856; --tw-ring-color: #0a2856"
-                @mouseover="$event.target.style.backgroundColor = '#083144'"
-                @mouseout="$event.target.style.backgroundColor = '#0A2856'"
-              >
-                Book Now
-              </router-link>
+              v-if="!authStore.isAdmin"
+              to="/my-bookings"
+              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors"
+              style="background-color: #0a2856; --tw-ring-color: #0a2856"
+              @mouseover="$event.target.style.backgroundColor = '#083144'"
+              @mouseout="$event.target.style.backgroundColor = '#0A2856'"
+            >
+              Book Now
+            </router-link>
           </div>
         </div>
         <div class="p-6">
@@ -488,6 +488,7 @@
 
 <script>
 import { ref, onMounted, computed } from 'vue'
+import { usePolling } from '@/utils/usePolling'
 import AppLayout from '@/components/Layout/AppLayout.vue'
 import { useAuthStore } from '@/stores/auth'
 import { vehicleAPI, bookingAPI } from '@/services/api'
@@ -814,6 +815,14 @@ export default {
       loadAvailableVehicles()
       loadCalendarBookings()
     })
+
+    // Auto-refresh key dashboard data every 30s while visible
+    usePolling(
+      async () => {
+        await Promise.all([loadStats(), loadAvailableVehicles(), loadCalendarBookings()])
+      },
+      { intervalMs: 30000, immediate: false },
+    )
 
     return {
       authStore,

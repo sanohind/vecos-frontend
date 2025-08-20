@@ -440,6 +440,7 @@
 
 <script>
 import { ref, watch, onMounted } from 'vue'
+import { usePolling } from '@/utils/usePolling'
 import AppLayout from '@/components/Layout/AppLayout.vue'
 import ViewBookingModal from '@/components/Booking/ViewBookingModal.vue'
 import ConfirmActionModal from '@/components/Booking/ConfirmActionModal.vue'
@@ -712,6 +713,14 @@ export default {
       loadBookings()
       loadStats()
     })
+
+    // Auto-refresh via polling every 30s when tab visible
+    usePolling(
+      async () => {
+        await Promise.all([loadBookings(), loadStats()])
+      },
+      { intervalMs: 30000, immediate: false },
+    )
 
     return {
       loading,

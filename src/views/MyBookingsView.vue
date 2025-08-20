@@ -393,6 +393,7 @@
 
 <script>
 import { ref, computed, onMounted, watch } from 'vue'
+import { usePolling } from '@/utils/usePolling'
 import { bookingAPI } from '@/services/api'
 import { parseDbDateTimeToLocalDate, formatDateTimeID, getDurationParts } from '@/utils/datetime'
 import AppLayout from '@/components/Layout/AppLayout.vue'
@@ -597,6 +598,9 @@ export default {
     onMounted(() => {
       fetchBookings()
     })
+
+    // Auto-refresh my bookings every 30s while visible
+    usePolling(() => fetchBookings(), { intervalMs: 30000, immediate: false })
 
     return {
       bookings,
