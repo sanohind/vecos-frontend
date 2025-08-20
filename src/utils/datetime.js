@@ -7,24 +7,36 @@ export function parseDbDateTimeToLocalDate(input) {
   if (input instanceof Date) return input
   if (typeof input !== 'string') return null
 
-  // Match: 2025-08-19 16:10:00 or 2025-08-19T16:10:00
-  const match = input.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?/)
-  if (!match) {
-    // Fallback: best-effort parse, but may apply timezone conversions
-    const fallback = new Date(input)
-    return isNaN(fallback.getTime()) ? null : fallback
+  const raw = input.trim()
+
+  // If the string contains an explicit timezone (e.g. trailing 'Z' or +07:00),
+  // trust the browser parser so that the instant is preserved correctly.
+  // Example: '2025-08-20T06:33:40.000000Z' → Date at 06:33 UTC.
+  if (/Z$/i.test(raw) || /[+-]\d{2}:?\d{2}$/.test(raw)) {
+    const withMillisTrimmed = raw.replace(/(\.\d{3})\d+Z$/, '$1Z') // trim microseconds to millis if present
+    const d = new Date(withMillisTrimmed)
+    return isNaN(d.getTime()) ? null : d
   }
 
-  const [, y, m, d, hh, mm, ss] = match
-  return new Date(
-    Number(y),
-    Number(m) - 1,
-    Number(d),
-    Number(hh),
-    Number(mm),
-    ss ? Number(ss) : 0,
-    0,
-  )
+  // Handle common DB formats without timezone info and treat them as local times
+  // e.g. '2025-08-19 16:10:00' or '2025-08-19T16:10:00'
+  const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?/)
+  if (match) {
+    const [, y, m, d, hh, mm, ss] = match
+    return new Date(
+      Number(y),
+      Number(m) - 1,
+      Number(d),
+      Number(hh),
+      Number(mm),
+      ss ? Number(ss) : 0,
+      0,
+    )
+  }
+
+  // Fallback: let the browser try
+  const fallback = new Date(raw)
+  return isNaN(fallback.getTime()) ? null : fallback
 }
 
 function pad2(n) {
@@ -94,4 +106,3 @@ export function getDurationParts(startLike, endLike) {
   const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
   return { hours, minutes }
 }
-

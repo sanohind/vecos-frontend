@@ -27,40 +27,74 @@
       <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-4">
         <div>
           <label for="status-filter" class="block text-sm font-medium text-gray-700">Status</label>
-          <select
-            id="status-filter"
-            v-model="filters.status"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm h-10 px-4 pr-10 text-gray-900"
-            style="border-color: #0A2856; focus:border-color: #0A2856; focus:ring-color: #0A2856;"
-            onfocus="this.style.borderColor='#0A2856'; this.style.boxShadow='0 0 0 1px #0A2856'"
-            onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'"
-          >
-            <option value="" class="text-gray-900">All Status</option>
-            <option value="pending" class="text-gray-900">Pending</option>
-            <option value="approved" class="text-gray-900">Approved</option>
-            <option value="rejected" class="text-gray-900">Rejected</option>
-            <option value="completed" class="text-gray-900">Completed</option>
-            <option value="cancelled" class="text-gray-900">Cancelled</option>
-          </select>
+          <div class="relative">
+            <select
+              id="status-filter"
+              v-model="filters.status"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm h-10 px-4 pr-8 text-gray-900 appearance-none"
+              style="border-color: #0A2856; focus:border-color: #0A2856; focus:ring-color: #0A2856;"
+              onfocus="this.style.borderColor='#0A2856'; this.style.boxShadow='0 0 0 1px #0A2856'"
+              onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'"
+            >
+              <option value="" class="text-gray-900">All Status</option>
+              <option value="pending" class="text-gray-900">Pending</option>
+              <option value="approved" class="text-gray-900">Approved</option>
+              <option value="rejected" class="text-gray-900">Rejected</option>
+              <option value="completed" class="text-gray-900">Completed</option>
+              <option value="cancelled" class="text-gray-900">Cancelled</option>
+            </select>
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+              <svg
+                class="w-4 h-4 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </div>
+          </div>
         </div>
 
         <div>
           <label for="date-filter" class="block text-sm font-medium text-gray-700"
             >Date Range</label
           >
-          <select
-            id="date-filter"
-            v-model="filters.dateRange"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm h-10 px-4 pr-10 text-gray-900"
-            style="border-color: #0A2856; focus:border-color: #0A2856; focus:ring-color: #0A2856;"
-            onfocus="this.style.borderColor='#0A2856'; this.style.boxShadow='0 0 0 1px #0A2856'"
-            onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'"
-          >
-            <option value="" class="text-gray-900">All Time</option>
-            <option value="today" class="text-gray-900">Today</option>
-            <option value="week" class="text-gray-900">This Week</option>
-            <option value="month" class="text-gray-900">This Month</option>
-          </select>
+          <div class="relative">
+            <select
+              id="date-filter"
+              v-model="filters.dateRange"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm h-10 px-4 pr-8 text-gray-900 appearance-none"
+              style="border-color: #0A2856; focus:border-color: #0A2856; focus:ring-color: #0A2856;"
+              onfocus="this.style.borderColor='#0A2856'; this.style.boxShadow='0 0 0 1px #0A2856'"
+              onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'"
+            >
+              <option value="" class="text-gray-900">All Time</option>
+              <option value="today" class="text-gray-900">Today</option>
+              <option value="week" class="text-gray-900">This Week</option>
+              <option value="month" class="text-gray-900">This Month</option>
+            </select>
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+              <svg
+                class="w-4 h-4 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </div>
+          </div>
         </div>
 
         <div>

@@ -57,18 +57,62 @@
             <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
               Password
             </label>
-            <input
-              id="password"
-              v-model="form.password"
-              type="password"
-              autocomplete="new-password"
-              required
-              class="block w-full px-3 py-2.5 border border-gray-300 rounded-md text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-              :class="{ 'border-red-300 focus:ring-red-500': errors.password }"
-              style="--focus-ring-color: #0a2856"
-              @focus="$event.target.style.setProperty('--tw-ring-color', '#0A2856')"
-              placeholder="Enter your password"
-            />
+            <div class="relative">
+              <input
+                id="password"
+                v-model="form.password"
+                :type="showPassword ? 'text' : 'password'"
+                autocomplete="new-password"
+                required
+                class="block w-full px-3 py-2.5 border border-gray-300 rounded-md text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-colors pr-10"
+                :class="{ 'border-red-300 focus:ring-red-500': errors.password }"
+                style="--focus-ring-color: #0a2856"
+                @focus="$event.target.style.setProperty('--tw-ring-color', '#0A2856')"
+                placeholder="Enter your password"
+              />
+              <button
+                type="button"
+                class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                @click="showPassword = !showPassword"
+                :aria-label="showPassword ? 'Hide password' : 'Show password'"
+              >
+                <svg
+                  v-if="!showPassword"
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M2.036 12.322a1.012 1.012 0 010-.644C3.423 7.51 7.36 5 12 5c4.64 0 8.577 2.51 9.964 6.678.07.21.07.434 0 .644C20.577 16.49 16.64 19 12 19c-4.64 0-8.577-2.51-9.964-6.678z"
+                  />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+                <svg
+                  v-else
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M3.98 8.223A10.477 10.477 0 001.934 12C3.28 16.09 7.245 19 12 19c1.598 0 3.11-.314 4.477-.885M10.343 6.94A9.956 9.956 0 0112 7c4.755 0 8.72 2.91 10.066 7-.337.995-.87 1.91-1.556 2.705M3 3l18 18"
+                  />
+                </svg>
+              </button>
+            </div>
             <p v-if="errors.password" class="text-red-600 text-xs mt-1">
               {{ errors.password[0] }}
             </p>
@@ -80,18 +124,62 @@
             <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">
               Confirm Password
             </label>
-            <input
-              id="password_confirmation"
-              v-model="form.password_confirmation"
-              type="password"
-              autocomplete="new-password"
-              required
-              class="block w-full px-3 py-2.5 border border-gray-300 rounded-md text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-              :class="{ 'border-red-300 focus:ring-red-500': errors.password_confirmation }"
-              style="--focus-ring-color: #0a2856"
-              @focus="$event.target.style.setProperty('--tw-ring-color', '#0A2856')"
-              placeholder="Confirm your password"
-            />
+            <div class="relative">
+              <input
+                id="password_confirmation"
+                v-model="form.password_confirmation"
+                :type="showConfirmPassword ? 'text' : 'password'"
+                autocomplete="new-password"
+                required
+                class="block w-full px-3 py-2.5 border border-gray-300 rounded-md text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-colors pr-10"
+                :class="{ 'border-red-300 focus:ring-red-500': errors.password_confirmation }"
+                style="--focus-ring-color: #0a2856"
+                @focus="$event.target.style.setProperty('--tw-ring-color', '#0A2856')"
+                placeholder="Confirm your password"
+              />
+              <button
+                type="button"
+                class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                @click="showConfirmPassword = !showConfirmPassword"
+                :aria-label="showConfirmPassword ? 'Hide password' : 'Show password'"
+              >
+                <svg
+                  v-if="!showConfirmPassword"
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M2.036 12.322a1.012 1.012 0 010-.644C3.423 7.51 7.36 5 12 5c4.64 0 8.577 2.51 9.964 6.678.07.21.07.434 0 .644C20.577 16.49 16.64 19 12 19c-4.64 0-8.577-2.51-9.964-6.678z"
+                  />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+                <svg
+                  v-else
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M3.98 8.223A10.477 10.477 0 001.934 12C3.28 16.09 7.245 19 12 19c1.598 0 3.11-.314 4.477-.885M10.343 6.94A9.956 9.956 0 0112 7c4.755 0 8.72 2.91 10.066 7-.337.995-.87 1.91-1.556 2.705M3 3l18 18"
+                  />
+                </svg>
+              </button>
+            </div>
             <p v-if="errors.password_confirmation" class="text-red-600 text-xs mt-1">
               {{ errors.password_confirmation[0] }}
             </p>
@@ -247,6 +335,8 @@ export default {
     const errorMessage = ref('')
     const successMessage = ref('')
     const loading = ref(false)
+    const showPassword = ref(false)
+    const showConfirmPassword = ref(false)
 
     const handleRegister = async () => {
       loading.value = true
@@ -312,6 +402,8 @@ export default {
       successMessage,
       loading,
       handleRegister,
+      showPassword,
+      showConfirmPassword,
     }
   },
 }
