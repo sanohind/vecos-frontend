@@ -60,6 +60,8 @@ export const vehicleAPI = {
 export const bookingAPI = {
   getAll: (params = {}) => api.get('/bookings', { params }),
   getStats: () => api.get('/bookings/stats'),
+  getSchedule: (params = {}) => api.get('/bookings/schedule', { params }),
+  getAvailableSlots: (params = {}) => api.get('/bookings/available-slots', { params }),
   getById: (id) => api.get(`/bookings/${id}`),
   create: (data) => api.post('/bookings', data),
   update: (id, data) => api.put(`/bookings/${id}`, data),

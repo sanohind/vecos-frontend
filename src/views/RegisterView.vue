@@ -146,20 +146,20 @@
               v-model="form.nik"
               type="text"
               required
-              minlength="16"
-              maxlength="16"
-              pattern="\d{16}"
-              title="NIK must be 16 digits"
+              minlength="6"
+              maxlength="9"
+              pattern="\d{6,9}"
+              title="NIK must be 6-9 digits"
               class="block w-full px-3 py-2.5 border border-gray-300 rounded-md text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
               :class="{ 'border-red-300 focus:ring-red-500': errors.nik }"
               style="--focus-ring-color: #0a2856"
               @focus="$event.target.style.setProperty('--tw-ring-color', '#0A2856')"
-              placeholder="Enter your 16-digit NIK"
+              placeholder="Enter your 6-9 digit NIK"
             />
             <p v-if="errors.nik" class="text-red-600 text-xs mt-1">
               {{ errors.nik[0] }}
             </p>
-            <p class="text-gray-500 text-xs mt-1">Must be exactly 16 digits.</p>
+            <p class="text-gray-500 text-xs mt-1">Must be 6-9 digits.</p>
           </div>
 
           <!-- Error Message -->
@@ -255,8 +255,8 @@ export default {
       successMessage.value = ''
 
       // Basic validation
-      if (!/^\d{16}$/.test(form.value.nik)) {
-        errors.value.nik = ['NIK must be exactly 16 digits.']
+      if (!/^\d{6,9}$/.test(form.value.nik)) {
+        errors.value.nik = ['NIK must be 6-9 digits.']
         loading.value = false
         return
       }

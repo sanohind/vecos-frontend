@@ -152,7 +152,10 @@
                             {{ booking.user?.name || 'Unknown User' }}
                           </div>
                           <div class="text-sm text-gray-500">
-                            {{ booking.user?.email || 'No email' }}
+                            {{ booking.user?.nik || 'No email' }}
+                          </div>
+                          <div class="text-sm text-gray-500">
+                            {{ booking.user?.department || 'No department' }}
                           </div>
                         </div>
                       </div>

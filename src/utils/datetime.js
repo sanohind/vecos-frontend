@@ -94,3 +94,4 @@ export function getDurationParts(startLike, endLike) {
   const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
   return { hours, minutes }
 }
+
