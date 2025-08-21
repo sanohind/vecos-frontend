@@ -23,9 +23,16 @@
             <!-- Vehicle Info -->
             <div class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-100">
               <div class="text-sm text-gray-600 space-y-1">
-                <div><span class="font-medium text-gray-700">Plate Number:</span> {{ vehicle?.plat_no }}</div>
-                <div><span class="font-medium text-gray-700">Brand:</span> {{ vehicle?.brand }}</div>
-                <div><span class="font-medium text-gray-700">Model:</span> {{ vehicle?.model }}</div>
+                <div>
+                  <span class="font-medium text-gray-700">Plate Number:</span>
+                  {{ vehicle?.plat_no }}
+                </div>
+                <div>
+                  <span class="font-medium text-gray-700">Brand:</span> {{ vehicle?.brand }}
+                </div>
+                <div>
+                  <span class="font-medium text-gray-700">Model:</span> {{ vehicle?.model }}
+                </div>
               </div>
             </div>
 
@@ -36,12 +43,10 @@
                 <label for="start_time" class="block text-sm font-medium text-gray-700 mb-2">
                   Start Date & Time
                 </label>
-                <input
+                <flat-pickr
                   id="start_time"
                   v-model="form.start_time"
-                  type="datetime-local"
-                  required
-                  :min="minDateTime"
+                  :config="startConfig"
                   class="w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 text-sm transition-colors"
                   :class="{ 'border-red-500 focus:ring-red-500': errors.start_time }"
                 />
@@ -55,12 +60,10 @@
                 <label for="end_time" class="block text-sm font-medium text-gray-700 mb-2">
                   End Date & Time
                 </label>
-                <input
+                <flat-pickr
                   id="end_time"
                   v-model="form.end_time"
-                  type="datetime-local"
-                  required
-                  :min="form.start_time || minDateTime"
+                  :config="endConfig"
                   class="w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 text-sm transition-colors"
                   :class="{ 'border-red-500 focus:ring-red-500': errors.end_time }"
                 />
@@ -79,7 +82,8 @@
                   v-model="form.destination"
                   type="text"
                   placeholder="Enter destination..."
-                  class="w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 text-sm transition-colors">
+                  class="w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 text-sm transition-colors"
+                />
               </div>
 
               <!-- Purpose/Notes (Optional) -->
@@ -112,7 +116,9 @@
               </div>
 
               <!-- Form Actions -->
-              <div class="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-3 space-y-3 space-y-reverse sm:space-y-0 pt-4">
+              <div
+                class="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-3 space-y-3 space-y-reverse sm:space-y-0 pt-4"
+              >
                 <button
                   type="button"
                   @click="$emit('close')"
@@ -120,12 +126,12 @@
                 >
                   Cancel
                 </button>
-                
+
                 <button
                   type="submit"
                   :disabled="loading"
                   class="w-full sm:w-auto px-6 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  style="background-color: #0A2856;"
+                  style="background-color: #0a2856"
                   :style="{ 'background-color': loading ? '#6B7280' : '#0A2856' }"
                   @mouseover="!loading && ($event.target.style.backgroundColor = '#08204A')"
                   @mouseout="!loading && ($event.target.style.backgroundColor = '#0A2856')"
@@ -166,10 +172,13 @@
 
 <script>
 import { ref, computed, watch } from 'vue'
+import flatPickr from 'vue-flatpickr-component'
+import 'flatpickr/dist/flatpickr.css'
 import { bookingAPI } from '@/services/api'
 
 export default {
   name: 'BookingModal',
+  components: { 'flat-pickr': flatPickr },
   props: {
     vehicle: {
       type: Object,
@@ -183,52 +192,88 @@ export default {
       end_time: '',
       purpose: '', // Will be sent as 'notes' to the API
       destination: '',
-      notes: ''
+      notes: '',
     })
 
     const errors = ref({})
     const errorMessage = ref('')
     const loading = ref(false)
 
-    // Set minimum datetime to current time
-    const minDateTime = computed(() => {
-      const now = new Date()
-      now.setMinutes(now.getMinutes() - now.getTimezoneOffset())
-      return now.toISOString().slice(0, 16)
+    const getNextHalfHour = () => {
+      const d = new Date()
+      const m = d.getMinutes()
+      if (m === 0 || m === 30) {
+        d.setSeconds(0, 0)
+      } else if (m < 30) {
+        d.setMinutes(30, 0, 0)
+      } else {
+        d.setHours(d.getHours() + 1)
+        d.setMinutes(0, 0, 0)
+      }
+      return d
+    }
+
+    const startMin = ref(getNextHalfHour())
+    const endMin = ref(null)
+
+    const commonPickerOptions = {
+      enableTime: true,
+      time_24hr: true,
+      minuteIncrement: 30,
+      dateFormat: 'Y-m-d H:i',
+      altInput: true,
+      altFormat: 'F j, Y H:i',
+    }
+
+    const startConfig = ref({
+      ...commonPickerOptions,
+      minDate: startMin.value,
     })
 
-    // Calculate duration between start and end time
+    const endConfig = ref({
+      ...commonPickerOptions,
+      minDate: startMin.value,
+    })
+
     const duration = computed(() => {
       if (!form.value.start_time || !form.value.end_time) return null
-
       const start = new Date(form.value.start_time)
       const end = new Date(form.value.end_time)
       const diff = end - start
-
       if (diff <= 0) return 'Invalid duration'
-
       const hours = Math.floor(diff / (1000 * 60 * 60))
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-
-      if (hours > 0 && minutes > 0) {
-        return `${hours} hours ${minutes} minutes`
-      } else if (hours > 0) {
-        return `${hours} hours`
-      } else {
-        return `${minutes} minutes`
-      }
+      if (hours > 0 && minutes > 0) return `${hours} hours ${minutes} minutes`
+      if (hours > 0) return `${hours} hours`
+      return `${minutes} minutes`
     })
 
-    // Update vehicle_id when vehicle prop changes
+    // Keep end >= start + 30m and update end minDate
     watch(
-      () => props.vehicle,
-      (newVehicle) => {
-        if (newVehicle) {
-          form.value.vehicle_id = newVehicle.vehicle_id
+      () => form.value.start_time,
+      (val) => {
+        if (!val) return
+        const start = new Date(val)
+        const minEnd = new Date(start.getTime() + 30 * 60000)
+        endMin.value = minEnd
+        endConfig.value = { ...endConfig.value, minDate: minEnd }
+        if (form.value.end_time) {
+          const currentEnd = new Date(form.value.end_time)
+          if (currentEnd < minEnd) {
+            form.value.end_time = formatForSubmit(minEnd)
+          }
         }
       },
-      { immediate: true },
     )
+
+    const formatForSubmit = (dateObj) => {
+      const yyyy = dateObj.getFullYear()
+      const mm = String(dateObj.getMonth() + 1).padStart(2, '0')
+      const dd = String(dateObj.getDate()).padStart(2, '0')
+      const hh = String(dateObj.getHours()).padStart(2, '0')
+      const mi = String(dateObj.getMinutes()).padStart(2, '0')
+      return `${yyyy}-${mm}-${dd} ${hh}:${mi}:00`
+    }
 
     const handleSubmit = async () => {
       loading.value = true
@@ -236,7 +281,6 @@ export default {
       errorMessage.value = ''
 
       try {
-        // Validate form
         if (!form.value.start_time || !form.value.end_time) {
           errorMessage.value = 'Please select both start and end time'
           loading.value = false
@@ -258,13 +302,12 @@ export default {
           return
         }
 
-        // Create booking with the proper data structure
         const bookingData = {
-          vehicle_id: props.vehicle.id, // Use the numeric ID instead of vehicle_id string
-          start_time: form.value.start_time,
-          end_time: form.value.end_time,
+          vehicle_id: props.vehicle.id,
+          start_time: formatForSubmit(startDate),
+          end_time: formatForSubmit(endDate),
           notes: form.value.notes,
-          destination: form.value.destination
+          destination: form.value.destination,
         }
 
         const response = await bookingAPI.create(bookingData)
@@ -290,14 +333,19 @@ export default {
       }
     }
 
+    // Initialize start minimum on mount
+    startConfig.value = { ...startConfig.value, minDate: startMin.value }
+    endConfig.value = { ...endConfig.value, minDate: startMin.value }
+
     return {
       form,
       errors,
       errorMessage,
       loading,
-      minDateTime,
       duration,
       handleSubmit,
+      startConfig,
+      endConfig,
     }
   },
 }

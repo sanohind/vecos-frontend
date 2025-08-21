@@ -160,7 +160,7 @@
                       scope="col"
                       class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                     >
-                      Purpose
+                      Destination
                     </th>
                     <th scope="col" class="relative px-6 py-3">
                       <span class="sr-only">Actions</span>
@@ -218,7 +218,7 @@
                     </td>
                     <td class="px-6 py-4">
                       <div class="text-sm text-gray-900 max-w-xs truncate">
-                        {{ booking.notes }}
+                        {{ booking.destination }}
                       </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -365,6 +365,11 @@
           </div>
         </div>
       </div>
+
+      <!-- Show total count even when pagination is not needed -->
+      <div v-else-if="pagination.total > 0" class="mt-6 text-center">
+        <div class="text-sm text-gray-700">Showing all {{ pagination.total }} results</div>
+      </div>
     </div>
 
     <!-- Statistics Modal -->
@@ -456,8 +461,7 @@ export default {
   },
   setup() {
     const loading = ref(false)
-    const allBookings = ref([]) // Store all bookings
-    const bookings = ref([]) // Store filtered bookings
+    const bookings = ref([]) // Store current page bookings
     const stats = ref({})
     const showStats = ref(false)
     const filters = ref({
@@ -477,18 +481,90 @@ export default {
     const loadBookings = async () => {
       loading.value = true
       try {
-        const response = await bookingAPI.getAll()
+        // Build params for server-side filtering and pagination
+        const params = {
+          per_page: pagination.value.per_page,
+          page: pagination.value.current_page,
+        }
+
+        // Add filters
+        if (filters.value.status) {
+          params.status = filters.value.status
+        }
+
+        if (filters.value.search) {
+          params.search = filters.value.search
+        }
+
+        // Add date range filter if provided
+        if (filters.value.dateRange) {
+          const now = new Date()
+          // Use local timezone for consistent date calculation
+          const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+          const startOfWeek = new Date(today)
+          startOfWeek.setDate(today.getDate() - today.getDay())
+          const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+
+          // Format dates as YYYY-MM-DD
+          const formatDate = (date) => {
+            const year = date.getFullYear()
+            const month = String(date.getMonth() + 1).padStart(2, '0')
+            const day = String(date.getDate()).padStart(2, '0')
+            return `${year}-${month}-${day}`
+          }
+
+          switch (filters.value.dateRange) {
+            case 'today':
+              params.start_date = formatDate(today)
+              params.end_date = formatDate(today)
+              break
+            case 'week':
+              params.start_date = formatDate(startOfWeek)
+              params.end_date = formatDate(new Date())
+              break
+            case 'month':
+              params.start_date = formatDate(startOfMonth)
+              params.end_date = formatDate(new Date())
+              break
+          }
+
+          console.log('📅 Date Range Filter:', {
+            dateRange: filters.value.dateRange,
+            start_date: params.start_date,
+            end_date: params.end_date,
+            today: formatDate(today),
+            currentDate: formatDate(new Date()),
+          })
+        }
+
+        console.log('🔍 API Parameters:', params)
+        const response = await bookingAPI.getAll(params)
+        console.log('📅 Bookings API Response:', response.data)
+
         if (response.data.code === 200) {
-          allBookings.value = response.data.data.data || []
-          applyFilters() // Initial filter application
+          bookings.value = response.data.data.data || []
+          // Update pagination info from backend response
+          pagination.value = {
+            current_page: response.data.data.current_page,
+            last_page: response.data.data.last_page,
+            per_page: response.data.data.per_page,
+            total: response.data.data.total,
+            from: response.data.data.from,
+            to: response.data.data.to,
+          }
+          console.log('📊 Pagination Debug:', {
+            total: pagination.value.total,
+            per_page: pagination.value.per_page,
+            current_page: pagination.value.current_page,
+            last_page: pagination.value.last_page,
+            shouldShowPagination: pagination.value.total > pagination.value.per_page,
+          })
         } else {
           console.error('Unexpected API response:', response.data)
-          allBookings.value = []
           bookings.value = []
         }
       } catch (error) {
         console.error('Error loading bookings:', error)
-        allBookings.value = []
         bookings.value = []
       } finally {
         loading.value = false
@@ -568,7 +644,7 @@ export default {
       }
     }
 
-    // Watch for any filter changes to apply client-side filtering
+    // Watch for any filter changes to apply server-side filtering
     let filterTimeout
     watch(
       () => ({
@@ -580,7 +656,7 @@ export default {
         clearTimeout(filterTimeout)
         filterTimeout = setTimeout(() => {
           pagination.value.current_page = 1
-          applyFilters()
+          loadBookings()
         }, 300)
       },
       { deep: true },
@@ -590,7 +666,7 @@ export default {
     watch(
       () => pagination.value.current_page,
       () => {
-        applyFilters()
+        loadBookings()
       },
     )
 
@@ -606,7 +682,7 @@ export default {
         search: '',
       }
       pagination.value.current_page = 1
-      applyFilters()
+      loadBookings()
     }
 
     const handleConfirm = async () => {
@@ -719,7 +795,7 @@ export default {
       async () => {
         await Promise.all([loadBookings(), loadStats()])
       },
-      { intervalMs: 30000, immediate: false },
+      { intervalMs: 60000, immediate: false },
     )
 
     return {

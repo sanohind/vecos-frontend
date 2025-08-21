@@ -53,7 +53,7 @@
               <div class="ml-5 w-0 flex-1">
                 <dl>
                   <dt class="text-sm font-medium text-gray-500 truncate">Total Bookings</dt>
-                  <dd class="text-lg font-medium text-gray-900">{{ bookings.length }}</dd>
+                  <dd class="text-lg font-medium text-gray-900">{{ totalCount }}</dd>
                 </dl>
               </div>
             </div>
@@ -238,7 +238,7 @@
             <p class="mt-2 text-gray-500">Loading bookings...</p>
           </div>
 
-          <div v-else-if="filteredBookings.length === 0" class="text-center py-8">
+          <div v-else-if="bookings.length === 0" class="text-center py-8">
             <svg
               class="mx-auto h-12 w-12 text-gray-400"
               fill="none"
@@ -258,7 +258,7 @@
 
           <div v-else class="space-y-4">
             <div
-              v-for="booking in paginatedBookings"
+              v-for="booking in bookings"
               :key="booking.id"
               class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
             >
@@ -326,33 +326,41 @@
           </div>
 
           <!-- Pagination -->
-          <div
-            v-if="filteredBookings.length > itemsPerPage"
-            class="mt-6 flex items-center justify-between"
-          >
+          <div v-if="totalCount > itemsPerPage" class="mt-6 flex items-center justify-between">
+            <!-- Debug info (remove in production) -->
+            <div class="text-xs text-gray-400 mb-2">
+              Debug: totalCount={{ totalCount }}, itemsPerPage={{ itemsPerPage }}, currentPage={{
+                currentPage
+              }}, totalPages={{ Math.ceil(totalCount / itemsPerPage) }}
+            </div>
             <div class="text-sm text-gray-700">
-              Showing {{ startIndex + 1 }} to {{ endIndex }} of
-              {{ filteredBookings.length }} results
+              Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to
+              {{ Math.min(currentPage * itemsPerPage, totalCount) }} of {{ totalCount }} results
             </div>
             <div class="flex space-x-2">
               <button
-                @click="currentPage = Math.max(1, currentPage - 1)"
+                @click="changePage(currentPage - 1)"
                 :disabled="currentPage === 1"
                 class="px-3 py-1 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Previous
               </button>
               <span class="px-3 py-1 text-sm text-gray-700">
-                Page {{ currentPage }} of {{ totalPages }}
+                Page {{ currentPage }} of {{ Math.ceil(totalCount / itemsPerPage) }}
               </span>
               <button
-                @click="currentPage = Math.min(totalPages, currentPage + 1)"
-                :disabled="currentPage === totalPages"
+                @click="changePage(currentPage + 1)"
+                :disabled="currentPage === Math.ceil(totalCount / itemsPerPage)"
                 class="px-3 py-1 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Next
               </button>
             </div>
+          </div>
+
+          <!-- Show total count even when pagination is not needed -->
+          <div v-else-if="totalCount > 0" class="mt-6 text-center">
+            <div class="text-sm text-gray-700">Showing all {{ totalCount }} results</div>
           </div>
         </div>
       </div>
@@ -420,6 +428,7 @@ export default {
     const deletingBooking = ref(null)
     const currentPage = ref(1)
     const itemsPerPage = ref(10)
+    const totalCount = ref(0) // Add total count for pagination
 
     const filters = ref({
       search: '',
@@ -430,16 +439,72 @@ export default {
     const fetchBookings = async () => {
       loading.value = true
       try {
-        const response = await bookingAPI.getAll()
+        // Build params for server-side filtering and pagination
+        const params = {
+          per_page: itemsPerPage.value,
+          page: currentPage.value,
+        }
+
+        // Add search filter if provided
+        if (filters.value.search) {
+          params.search = filters.value.search
+        }
+
+        // Add status filter if provided
+        if (filters.value.status) {
+          params.status = filters.value.status
+        }
+
+        // Add date range filter if provided
+        if (filters.value.dateFrom) {
+          const now = new Date()
+          const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+          const startOfWeek = new Date(today)
+          startOfWeek.setDate(today.getDate() - today.getDay())
+          const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+
+          let fromDate = null
+          switch (filters.value.dateFrom) {
+            case 'today':
+              fromDate = today
+              break
+            case 'week':
+              fromDate = startOfWeek
+              break
+            case 'month':
+              fromDate = startOfMonth
+              break
+            default:
+              fromDate = null
+          }
+
+          if (fromDate) {
+            params.start_date = fromDate.toISOString().split('T')[0]
+            params.end_date = new Date().toISOString().split('T')[0]
+          }
+        }
+
+        const response = await bookingAPI.getAll(params)
         console.log('📅 Bookings API Response:', response.data)
-        console.log('📊 Data Structure:', {
-          level1: response.data.data,
-          level2: response.data.data.data,
-          isArray: Array.isArray(response.data.data.data),
-        })
-        bookings.value = response.data.data.data
+
+        if (response.data.code === 200) {
+          bookings.value = response.data.data.data || []
+          // Update total count for pagination
+          totalCount.value = response.data.data.total
+          console.log('📊 Pagination Debug:', {
+            totalCount: totalCount.value,
+            itemsPerPage: itemsPerPage.value,
+            totalPages: Math.ceil(totalCount.value / itemsPerPage.value),
+            currentPage: currentPage.value,
+            shouldShowPagination: totalCount.value > itemsPerPage.value,
+          })
+        } else {
+          console.error('Unexpected API response format:', response.data)
+          bookings.value = []
+        }
       } catch (error) {
         console.error('Error fetching bookings:', error)
+        bookings.value = []
       } finally {
         loading.value = false
       }
@@ -509,22 +574,6 @@ export default {
       return bookings.value.filter((b) => b.status === 'rejected').length
     })
 
-    const totalPages = computed(() => {
-      return Math.ceil(filteredBookings.value.length / itemsPerPage.value)
-    })
-
-    const startIndex = computed(() => {
-      return (currentPage.value - 1) * itemsPerPage.value
-    })
-
-    const endIndex = computed(() => {
-      return Math.min(startIndex.value + itemsPerPage.value, filteredBookings.value.length)
-    })
-
-    const paginatedBookings = computed(() => {
-      return filteredBookings.value.slice(startIndex.value, endIndex.value)
-    })
-
     const resetFilters = () => {
       filters.value = {
         search: '',
@@ -532,6 +581,15 @@ export default {
         dateFrom: '',
       }
       currentPage.value = 1
+      fetchBookings()
+    }
+
+    const changePage = (page) => {
+      currentPage.value = Math.max(
+        1,
+        Math.min(page, Math.ceil(totalCount.value / itemsPerPage.value)),
+      )
+      fetchBookings()
     }
 
     const formatDateTime = (dateString) => {
@@ -591,6 +649,7 @@ export default {
       filters,
       () => {
         currentPage.value = 1
+        fetchBookings()
       },
       { deep: true },
     )
@@ -600,7 +659,7 @@ export default {
     })
 
     // Auto-refresh my bookings every 30s while visible
-    usePolling(() => fetchBookings(), { intervalMs: 30000, immediate: false })
+    usePolling(() => fetchBookings(), { intervalMs: 60000, immediate: false })
 
     return {
       bookings,
@@ -616,11 +675,9 @@ export default {
       pendingBookings,
       approvedBookings,
       rejectedBookings,
-      totalPages,
-      startIndex,
-      endIndex,
-      paginatedBookings,
+      totalCount,
       resetFilters,
+      changePage,
       formatDateTime,
       getDuration,
       getStatusClass,

@@ -36,7 +36,7 @@
       <!-- Filters -->
       <div class="bg-white shadow rounded-lg mb-6">
         <div class="px-4 py-5 sm:p-6">
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div v-if="authStore.isAdmin" class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label for="search" class="block text-sm font-medium text-gray-700">Search</label>
               <input
@@ -90,6 +90,58 @@
               </button>
             </div>
           </div>
+
+          <!-- Availability Search (User only) -->
+          <div v-if="!authStore.isAdmin">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label for="startDate" class="block text-sm font-medium text-gray-700">
+                  Start Date
+                </label>
+                <input
+                  id="startDate"
+                  v-model="startDate"
+                  type="date"
+                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-opacity-50 text-sm h-10 px-4"
+                  style="focus:ring-color: #0A2856; focus:border-color: #0A2856"
+                />
+              </div>
+
+              <div>
+                <label for="endDate" class="block text-sm font-medium text-gray-700">
+                  End Date
+                </label>
+                <input
+                  id="endDate"
+                  v-model="endDate"
+                  type="date"
+                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-opacity-50 text-sm h-10 px-4"
+                  style="focus:ring-color: #0A2856; focus:border-color: #0A2856"
+                />
+              </div>
+
+              <div class="flex items-end space-x-2">
+                <button
+                  @click="applyAvailabilityFilter"
+                  class="w-full px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-opacity-50"
+                  style="background-color: #0a2856; focus-ring-color: #0a2856"
+                >
+                  Check Availability
+                </button>
+                <button
+                  v-if="isAvailabilityFiltered"
+                  @click="clearAvailabilityFilter"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-opacity-50"
+                  style="focus:ring-color: #0A2856"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
+            <p class="mt-2 text-xs text-gray-500">
+              Enter the date range to search for available vehicles.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -104,7 +156,7 @@
             <p class="mt-2 text-gray-500">Loading vehicles...</p>
           </div>
 
-          <div v-else-if="filteredVehicles.length === 0" class="text-center py-8">
+          <div v-else-if="paginatedVehicles.length === 0" class="text-center py-8">
             <svg
               class="mx-auto h-12 w-12 text-gray-400"
               fill="none"
@@ -142,7 +194,7 @@
                         {{ vehicle.brand }} {{ vehicle.model }}
                       </h3>
                       <p class="text-sm text-gray-500">{{ vehicle.plat_no }}</p>
-                      <p class="text-xs text-gray-400">ID: {{ vehicle.vehicle_id }}</p>
+                      <p class="text-xs text-gray-400">ID: {{ vehicle.id }}</p>
                     </div>
                     <div>
                       <span
@@ -196,33 +248,115 @@
           </div>
 
           <!-- Pagination -->
-          <div
-            v-if="filteredVehicles.length > itemsPerPage"
-            class="mt-6 flex items-center justify-between"
-          >
-            <div class="text-sm text-gray-700">
-              Showing {{ startIndex + 1 }} to {{ endIndex }} of
-              {{ filteredVehicles.length }} results
-            </div>
-            <div class="flex space-x-2">
+          <div v-if="totalCount > itemsPerPage" class="mt-6 flex items-center justify-between">
+            <div class="flex-1 flex justify-between sm:hidden">
               <button
-                @click="currentPage = Math.max(1, currentPage - 1)"
+                @click="changePage(currentPage - 1)"
                 :disabled="currentPage === 1"
-                class="px-3 py-1 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Previous
               </button>
-              <span class="px-3 py-1 text-sm text-gray-700">
-                Page {{ currentPage }} of {{ totalPages }}
-              </span>
               <button
-                @click="currentPage = Math.min(totalPages, currentPage + 1)"
+                @click="changePage(currentPage + 1)"
                 :disabled="currentPage === totalPages"
-                class="px-3 py-1 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Next
               </button>
             </div>
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+              <div>
+                <p class="text-sm text-gray-700">
+                  Showing
+                  <span class="font-medium">{{ startIndex + 1 }}</span>
+                  to
+                  <span class="font-medium">{{ endIndex }}</span>
+                  of
+                  <span class="font-medium">{{ totalCount }}</span>
+                  results
+                </p>
+              </div>
+              <div>
+                <nav
+                  class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                  aria-label="Pagination"
+                >
+                  <button
+                    @click="changePage(currentPage - 1)"
+                    :disabled="currentPage === 1"
+                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span class="sr-only">Previous</span>
+                    <svg
+                      class="h-5 w-5"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                  </button>
+
+                  <template v-for="page in getPageNumbers()" :key="page">
+                    <button
+                      v-if="page !== '...'"
+                      @click="changePage(page)"
+                      :class="[
+                        page === currentPage
+                          ? 'z-10 border text-white'
+                          : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50',
+                        'relative inline-flex items-center px-4 py-2 border text-sm font-medium',
+                      ]"
+                      :style="
+                        page === currentPage
+                          ? 'background-color: #0A2856; border-color: #0A2856;'
+                          : ''
+                      "
+                    >
+                      {{ page }}
+                    </button>
+                    <span
+                      v-else
+                      class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700"
+                    >
+                      ...
+                    </span>
+                  </template>
+
+                  <button
+                    @click="changePage(currentPage + 1)"
+                    :disabled="currentPage === totalPages"
+                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span class="sr-only">Next</span>
+                    <svg
+                      class="h-5 w-5"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                  </button>
+                </nav>
+              </div>
+            </div>
+          </div>
+
+          <!-- Show total count even when pagination is not needed -->
+          <div v-else-if="totalCount > 0" class="mt-6 text-center">
+            <div class="text-sm text-gray-700">Showing all {{ totalCount }} results</div>
           </div>
         </div>
       </div>
@@ -258,6 +392,122 @@
         @close="showBookingModal = false"
         @booked="handleBookingCreated"
       />
+
+<!-- Vehicle Schedule Modal -->
+<div v-if="selectedVehicle && showSchedule" class="fixed inset-0 z-[9999] overflow-y-auto">
+  <div
+    class="flex items-center justify-center min-h-screen px-4 pt-24 pb-8 text-center sm:block sm:pt-20"
+  >
+    <!-- Background overlay -->
+    <div
+      class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+      @click="closeSchedule"
+    ></div>
+
+    <!-- Schedule Modal -->
+    <div
+      class="inline-block align-middle bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full sm:p-6"
+    >
+      <div class="sm:flex sm:items-start">
+        <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
+          <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
+            Schedule for {{ selectedVehicle.brand }} {{ selectedVehicle.model }}
+          </h3>
+
+          <!-- Date Selection -->
+          <div class="mb-6">
+            <label for="schedule-date" class="block text-sm font-medium text-gray-700 mb-2">
+              Select Date
+            </label>
+            <input
+              id="schedule-date"
+              v-model="scheduleDate"
+              type="date"
+              :min="today"
+              class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm h-10 px-4"
+            />
+          </div>
+
+          <!-- Schedule Display -->
+          <div v-if="scheduleLoading" class="text-center py-8">
+            <div
+              class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500 mx-auto"
+            ></div>
+            <p class="mt-2 text-gray-500">Loading schedule...</p>
+          </div>
+
+          <div v-else-if="vehicleSchedule.length === 0" class="text-center py-8">
+            <p class="text-gray-500">No bookings for this date</p>
+          </div>
+
+          <div v-else class="space-y-4">
+            <div
+              v-for="daySchedule in vehicleSchedule"
+              :key="daySchedule.date"
+              class="border border-gray-200 rounded-lg p-4"
+            >
+              <h4 class="text-md font-medium text-gray-900 mb-3">
+                {{ formatScheduleDate(daySchedule.date) }}
+                <span v-if="daySchedule.is_today" class="ml-2 text-sm text-blue-600"
+                  >(Today)</span
+                >
+                <span v-else-if="daySchedule.is_tomorrow" class="ml-2 text-sm text-green-600"
+                  >(Tomorrow)</span
+                >
+              </h4>
+
+              <div v-if="daySchedule.bookings.length === 0" class="text-gray-500 text-sm">
+                No bookings scheduled
+              </div>
+
+              <div v-else class="space-y-2">
+                <div
+                  v-for="booking in daySchedule.bookings"
+                  :key="booking.id"
+                  class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                >
+                  <div class="flex-1">
+                    <div class="flex items-center space-x-2">
+                      <span class="text-sm font-medium text-gray-900">
+                        {{ booking.time_display }}
+                      </span>
+                      <span
+                        class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
+                        :class="getStatusClass(booking.status)"
+                      >
+                        {{ booking.status }}
+                      </span>
+                    </div>
+                    <div class="text-sm text-gray-600">
+                      {{ booking.user.name }} - {{ booking.destination }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="mt-6 flex justify-end space-x-3">
+            <button
+              @click="closeSchedule"
+              class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              Close
+            </button>
+            <button
+              @click="proceedToBooking"
+              class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              style="background-color: #0a2856"
+            >
+              Proceed to Booking
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
     </div>
   </AppLayout>
 </template>
@@ -265,7 +515,7 @@
 <script>
 import { ref, computed, onMounted, watch } from 'vue'
 import { usePolling } from '@/utils/usePolling'
-import { vehicleAPI } from '@/services/api'
+import { vehicleAPI, bookingAPI } from '@/services/api'
 import AppLayout from '@/components/Layout/AppLayout.vue'
 import VehicleModal from '@/components/Vehicle/VehicleModal.vue'
 import DeleteConfirmModal from '@/components/Vehicle/DeleteConfirmModal.vue'
@@ -291,19 +541,54 @@ export default {
     const deletingVehicle = ref(null)
     const currentPage = ref(1)
     const itemsPerPage = ref(10)
+    const totalCount = ref(0) // New ref for total count
 
     const filters = ref({
       search: '',
       status: '',
     })
 
+    // Availability inputs (user flow)
+    const startDate = ref('')
+    const endDate = ref('')
+    const isAvailabilityFiltered = ref(false)
+
     const fetchVehicles = async () => {
       loading.value = true
       try {
-        const response = await (authStore.isAdmin ? vehicleAPI.getAll() : vehicleAPI.getAvailable())
+        // Build params for server-side filtering and pagination
+        const params = {
+          per_page: itemsPerPage.value,
+          page: currentPage.value,
+        }
+
+        if (!authStore.isAdmin) {
+          params.status = 'active'
+        }
+
+        // Add search filter if provided
+        if (filters.value.search) {
+          params.search = filters.value.search
+        }
+
+        // Add status filter if provided (for admin)
+        if (filters.value.status && authStore.isAdmin) {
+          params.status = filters.value.status
+        }
+
+        const response = await vehicleAPI.getAll(params)
         console.log('🚗 Vehicles API Response:', response.data)
         if (response.data.code === 200) {
           vehicles.value = response.data.data.data
+          // Update total count for pagination
+          totalCount.value = response.data.data.total
+          console.log('📊 Pagination Debug:', {
+            totalCount: totalCount.value,
+            itemsPerPage: itemsPerPage.value,
+            totalPages: Math.ceil(totalCount.value / itemsPerPage.value),
+            currentPage: currentPage.value,
+            shouldShowPagination: totalCount.value > itemsPerPage.value,
+          })
         } else {
           console.error('Unexpected API response format:', response.data)
           vehicles.value = []
@@ -316,29 +601,50 @@ export default {
       }
     }
 
+    const applyAvailabilityFilter = async () => {
+      if (authStore.isAdmin) return
+      loading.value = true
+      try {
+        const params = {
+          start_date: startDate.value,
+          end_date: endDate.value,
+        }
+        if (!params.start_date || !params.end_date) {
+          console.warn('Start and end date are required for availability check')
+          loading.value = false
+          return
+        }
+        const response = await vehicleAPI.getAvailable(params)
+        if (response.data.code === 200) {
+          vehicles.value = response.data.data?.vehicles || []
+          isAvailabilityFiltered.value = true
+        } else {
+          vehicles.value = []
+        }
+      } catch (error) {
+        console.error('Error applying availability filter:', error)
+        vehicles.value = []
+      } finally {
+        loading.value = false
+      }
+    }
+
+    const clearAvailabilityFilter = async () => {
+      if (authStore.isAdmin) return
+      startDate.value = ''
+      endDate.value = ''
+      isAvailabilityFiltered.value = false
+      await fetchVehicles()
+    }
+
     const filteredVehicles = computed(() => {
-      let filtered = vehicles.value
-
-      if (filters.value.search) {
-        const search = filters.value.search.toLowerCase()
-        filtered = filtered.filter(
-          (vehicle) =>
-            vehicle.brand?.toLowerCase().includes(search) ||
-            vehicle.model?.toLowerCase().includes(search) ||
-            vehicle.plat_no?.toLowerCase().includes(search) ||
-            vehicle.vehicle_id?.toLowerCase().includes(search),
-        )
-      }
-
-      if (filters.value.status) {
-        filtered = filtered.filter((vehicle) => vehicle.status === filters.value.status)
-      }
-
-      return filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      // Since we're now using server-side filtering, just return the vehicles
+      // The filtering is handled by the backend
+      return vehicles.value
     })
 
     const totalPages = computed(() => {
-      return Math.ceil(filteredVehicles.value.length / itemsPerPage.value)
+      return Math.ceil(totalCount.value / itemsPerPage.value)
     })
 
     const startIndex = computed(() => {
@@ -346,11 +652,11 @@ export default {
     })
 
     const endIndex = computed(() => {
-      return Math.min(startIndex.value + itemsPerPage.value, filteredVehicles.value.length)
+      return Math.min(startIndex.value + itemsPerPage.value, totalCount.value)
     })
 
     const paginatedVehicles = computed(() => {
-      return filteredVehicles.value.slice(startIndex.value, endIndex.value)
+      return filteredVehicles.value
     })
 
     const resetFilters = () => {
@@ -359,28 +665,103 @@ export default {
         status: '',
       }
       currentPage.value = 1
+      fetchVehicles()
     }
 
     const formatDate = (dateString) => {
       return formatDateID(dateString, { month: 'short' })
     }
 
+    // Add showBookingModal ref
+    const showBookingModal = ref(false)
+    const selectedVehicle = ref(null)
+
+    // Schedule functionality
+    const showSchedule = ref(false)
+    const scheduleDate = ref('')
+    const vehicleSchedule = ref([])
+    const scheduleLoading = ref(false)
+
+    const bookVehicle = async (vehicle) => {
+      selectedVehicle.value = vehicle
+      showSchedule.value = true
+
+      // Set default date to today
+      const today = new Date()
+      scheduleDate.value = today.toISOString().split('T')[0]
+
+      // Load schedule for today
+      await loadVehicleSchedule()
+    }
+
+    const loadVehicleSchedule = async () => {
+      if (!selectedVehicle.value || !scheduleDate.value) return
+
+      scheduleLoading.value = true
+      try {
+        const response = await bookingAPI.getSchedule({
+          vehicle_id: selectedVehicle.value.id,
+          date: scheduleDate.value,
+          days: 1,
+        })
+
+        if (response.data.code === 200) {
+          vehicleSchedule.value = response.data.data.schedule
+        } else {
+          vehicleSchedule.value = []
+        }
+      } catch (error) {
+        console.error('Error loading vehicle schedule:', error)
+        vehicleSchedule.value = []
+      } finally {
+        scheduleLoading.value = false
+      }
+    }
+
+    const closeSchedule = () => {
+      showSchedule.value = false
+      selectedVehicle.value = null
+      vehicleSchedule.value = []
+    }
+
+    const proceedToBooking = () => {
+      // Close schedule modal and open booking modal
+      showSchedule.value = false
+      showBookingModal.value = true
+    }
+
+    const formatScheduleDate = (dateString) => {
+      const date = new Date(dateString)
+      return date.toLocaleDateString('id-ID', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    }
+
     const getStatusClass = (status) => {
       const statusClasses = {
+        pending: 'bg-yellow-100 text-yellow-800',
+        approved: 'bg-green-100 text-green-800',
+        rejected: 'bg-red-100 text-red-800',
         active: 'bg-green-100 text-green-800',
         inactive: 'bg-red-100 text-red-800',
       }
       return statusClasses[status] || 'bg-gray-100 text-gray-800'
     }
 
-    // Add showBookingModal ref
-    const showBookingModal = ref(false)
-    const selectedVehicle = ref(null)
+    // Computed for today's date
+    const today = computed(() => {
+      return new Date().toISOString().split('T')[0]
+    })
 
-    const bookVehicle = (vehicle) => {
-      selectedVehicle.value = vehicle
-      showBookingModal.value = true
-    }
+    // Watch for date changes to reload schedule
+    watch(scheduleDate, () => {
+      if (selectedVehicle.value && scheduleDate.value) {
+        loadVehicleSchedule()
+      }
+    })
 
     const editVehicle = (vehicle) => {
       editingVehicle.value = { ...vehicle }
@@ -410,21 +791,78 @@ export default {
       filters,
       () => {
         currentPage.value = 1
+        fetchVehicles()
       },
       { deep: true },
     )
+
+    // Auto-apply availability when both inputs are set
+    watch([startDate, endDate], async ([s, e]) => {
+      if (s && e) {
+        currentPage.value = 1
+        await applyAvailabilityFilter()
+      }
+    })
 
     onMounted(() => {
       fetchVehicles()
     })
 
-    // Auto-refresh vehicle list every 30s while visible
-    usePolling(() => fetchVehicles(), { intervalMs: 30000, immediate: false })
+    // Auto-refresh vehicle list every 30s while visible (pause when availability filter is active)
+    usePolling(
+      () => {
+        if (!isAvailabilityFiltered.value) {
+          return fetchVehicles()
+        }
+      },
+      { intervalMs: 60000, immediate: false },
+    )
 
     const handleBookingCreated = () => {
       showBookingModal.value = false
       // Optionally refresh vehicles list if status might change
       fetchVehicles()
+    }
+
+    const changePage = (page) => {
+      currentPage.value = Math.max(1, Math.min(page, totalPages.value))
+      fetchVehicles()
+    }
+
+    const getPageNumbers = () => {
+      const pages = []
+      const current = currentPage.value
+      const last = totalPages.value
+
+      if (last <= 7) {
+        for (let i = 1; i <= last; i++) {
+          pages.push(i)
+        }
+      } else {
+        if (current <= 4) {
+          for (let i = 1; i <= 5; i++) {
+            pages.push(i)
+          }
+          pages.push('...')
+          pages.push(last)
+        } else if (current >= last - 3) {
+          pages.push(1)
+          pages.push('...')
+          for (let i = last - 4; i <= last; i++) {
+            pages.push(i)
+          }
+        } else {
+          pages.push(1)
+          pages.push('...')
+          for (let i = current - 1; i <= current + 1; i++) {
+            pages.push(i)
+          }
+          pages.push('...')
+          pages.push(last)
+        }
+      }
+
+      return pages
     }
 
     return {
@@ -436,6 +874,7 @@ export default {
       deletingVehicle,
       currentPage,
       itemsPerPage,
+      totalCount, // Add this
       filters,
       filteredVehicles,
       totalPages,
@@ -454,6 +893,24 @@ export default {
       showBookingModal,
       selectedVehicle,
       handleBookingCreated,
+      // availability controls
+      startDate,
+      endDate,
+      applyAvailabilityFilter,
+      isAvailabilityFiltered,
+      clearAvailabilityFilter,
+      changePage,
+      getPageNumbers,
+      // schedule functionality
+      showSchedule,
+      scheduleDate,
+      vehicleSchedule,
+      scheduleLoading,
+      closeSchedule,
+      proceedToBooking,
+      formatScheduleDate,
+      loadVehicleSchedule, // ← TAMBAHKAN INI
+      today, // ← TAMBAHKAN INI - ini yang menyebabkan error
     }
   },
 }

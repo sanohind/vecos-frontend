@@ -6,13 +6,13 @@ import { onMounted, onBeforeUnmount } from 'vue'
  *
  * @param {() => (void|Promise<void>)} callback - Function to execute on each tick.
  * @param {{ intervalMs?: number, immediate?: boolean, visibleOnly?: boolean }} options
- *   - intervalMs: polling interval in milliseconds (default: 30000)
+ *   - intervalMs: polling interval in milliseconds (default: 60000)
  *   - immediate: run once immediately on mount/visibility gain (default: true)
  *   - visibleOnly: pause when document is hidden, resume when visible (default: true)
  * @returns {{ start: () => void, stop: () => void }} controls to start/stop manually
  */
 export function usePolling(callback, options = {}) {
-  const intervalMs = typeof options.intervalMs === 'number' ? options.intervalMs : 30000
+  const intervalMs = typeof options.intervalMs === 'number' ? options.intervalMs : 60000
   const immediate = options.immediate !== false
   const visibleOnly = options.visibleOnly !== false
 

@@ -49,7 +49,8 @@ export const authAPI = {
 // Vehicle API calls
 export const vehicleAPI = {
   getAll: (params = {}) => api.get('/vehicles', { params }),
-  getAvailable: (params = {}) => api.get('/vehicles', { params: { ...params, status: 'active' } }),
+  getAllWithoutPagination: () => api.get('/vehicles', { params: { per_page: 1000 } }), // Get all vehicles for stats
+  getAvailable: (params = {}) => api.get('/vehicles/available', { params }),
   getById: (id) => api.get(`/vehicles/${id}`),
   create: (data) => api.post('/vehicles', data),
   update: (id, data) => api.put(`/vehicles/${id}`, data),

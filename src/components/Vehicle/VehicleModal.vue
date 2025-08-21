@@ -22,26 +22,6 @@
 
             <!-- Vehicle Form -->
             <form @submit.prevent="handleSubmit" class="space-y-5">
-              <!-- Vehicle ID (only for create) -->
-              <div v-if="!isEdit">
-                <label for="vehicle_id" class="block text-sm font-medium text-gray-700 mb-2">
-                  Vehicle ID
-                </label>
-                <input
-                  id="vehicle_id"
-                  v-model="form.vehicle_id"
-                  type="text"
-                  required
-                  placeholder="Enter unique vehicle ID"
-                  class="w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 text-sm transition-colors"
-                  :class="{ 'border-red-500 focus:ring-red-500': errors.vehicle_id }"
-                />
-                <span v-if="errors.vehicle_id" class="text-red-500 text-xs mt-1 block">
-                  {{ errors.vehicle_id[0] }}
-                </span>
-                <p class="text-xs text-gray-500 mt-1">Must be unique across all vehicles</p>
-              </div>
-
               <!-- Plate Number -->
               <div>
                 <label for="plat_no" class="block text-sm font-medium text-gray-700 mb-2">
@@ -243,7 +223,6 @@ export default {
   emits: ['close', 'saved'],
   setup(props, { emit }) {
     const form = ref({
-      vehicle_id: '',
       plat_no: '',
       brand: '',
       model: '',
@@ -318,7 +297,6 @@ export default {
       (newVehicle) => {
         if (newVehicle && props.isEdit) {
           form.value = {
-            vehicle_id: newVehicle.vehicle_id,
             plat_no: newVehicle.plat_no,
             brand: newVehicle.brand,
             model: newVehicle.model,
@@ -337,10 +315,6 @@ export default {
 
       try {
         // Basic validation
-        if (!form.value.vehicle_id && !props.isEdit) {
-          errorMessage.value = 'Vehicle ID is required'
-          return
-        }
         if (!form.value.plat_no) {
           errorMessage.value = 'Plate number is required'
           return
@@ -368,8 +342,13 @@ export default {
             status: form.value.status,
           })
         } else {
-          // Create new vehicle
-          response = await vehicleAPI.create(form.value)
+          // Create new vehicle - tidak perlu vehicle_id karena auto increment
+          response = await vehicleAPI.create({
+            plat_no: form.value.plat_no,
+            brand: form.value.brand,
+            model: form.value.model,
+            status: form.value.status,
+          })
         }
 
         if (response.data.code === (props.isEdit ? 200 : 201)) {
@@ -390,7 +369,7 @@ export default {
           errors.value = error.response.data.errors || {}
           errorMessage.value = error.response.data.message || 'Validation failed'
         } else if (error.response?.status === 409) {
-          errorMessage.value = 'Vehicle ID or plate number already exists'
+          errorMessage.value = 'Plate number already exists'
         } else {
           errorMessage.value =
             error.response?.data?.message ||
