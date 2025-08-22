@@ -119,7 +119,7 @@
                     <span class="sr-only">Open user menu</span>
                     <div
                       class="h-8 w-8 rounded-full flex items-center justify-center text-white font-medium"
-                      style="background-color: #0A2856"
+                      style="background-color: #0a2856"
                     >
                       {{ authStore.userName.charAt(0).toUpperCase() }}
                     </div>
@@ -142,7 +142,7 @@
                         <div class="px-4 py-3 text-sm text-gray-700 border-b border-gray-100">
                           <div class="font-medium">{{ authStore.userName }}</div>
                           <div class="text-xs text-gray-500 mt-1">{{ authStore.userEmail }}</div>
-                          <div class="text-xs mt-1" style="color: #0A2856">
+                          <div class="text-xs mt-1" style="color: #0a2856">
                             {{ authStore.isAdmin ? 'Administrator' : 'User' }}
                           </div>
                         </div>
@@ -328,6 +328,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
 import { useAuthStore } from '@/stores/auth'
+import { useNotification } from '@/composables/useNotification'
 
 export default {
   name: 'AppLayout',
@@ -340,10 +341,12 @@ export default {
   setup() {
     const router = useRouter()
     const authStore = useAuthStore()
+    const { showSuccess } = useNotification()
     const mobileMenuOpen = ref(false)
 
     const handleLogout = async () => {
       await authStore.logout()
+      showSuccess('Logged Out', 'You have been logged out successfully!')
       router.push('/login')
     }
 
@@ -351,6 +354,7 @@ export default {
       authStore,
       mobileMenuOpen,
       handleLogout,
+      showSuccess,
     }
   },
 }

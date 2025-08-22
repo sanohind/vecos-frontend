@@ -228,8 +228,15 @@
                     <!-- Admin Actions -->
                     <template v-if="authStore.isAdmin">
                       <button
+                        @click="viewSchedule(vehicle)"
+                        class="text-sm font-medium hover:opacity-80 mr-2"
+                        style="color: #0a2856"
+                      >
+                        View Schedule
+                      </button>
+                      <button
                         @click="editVehicle(vehicle)"
-                        class="text-sm font-medium hover:opacity-80"
+                        class="text-sm font-medium hover:opacity-80 mr-2"
                         style="color: #0a2856"
                       >
                         Edit
@@ -393,121 +400,23 @@
         @booked="handleBookingCreated"
       />
 
-<!-- Vehicle Schedule Modal -->
-<div v-if="selectedVehicle && showSchedule" class="fixed inset-0 z-[9999] overflow-y-auto">
-  <div
-    class="flex items-center justify-center min-h-screen px-4 pt-24 pb-8 text-center sm:block sm:pt-20"
-  >
-    <!-- Background overlay -->
-    <div
-      class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
-      @click="closeSchedule"
-    ></div>
+      <!-- Vehicle Schedule Modal -->
+      <VehicleScheduleModal
+        :is-visible="showSchedule"
+        :vehicle="selectedVehicle"
+        :show-proceed-button="!authStore.isAdmin"
+        @close="closeSchedule"
+        @proceed-to-booking="proceedToBooking"
+        @booking-completed="handleBookingCompleted"
+      />
 
-    <!-- Schedule Modal -->
-    <div
-      class="inline-block align-middle bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full sm:p-6"
-    >
-      <div class="sm:flex sm:items-start">
-        <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
-          <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
-            Schedule for {{ selectedVehicle.brand }} {{ selectedVehicle.model }}
-          </h3>
-
-          <!-- Date Selection -->
-          <div class="mb-6">
-            <label for="schedule-date" class="block text-sm font-medium text-gray-700 mb-2">
-              Select Date
-            </label>
-            <input
-              id="schedule-date"
-              v-model="scheduleDate"
-              type="date"
-              :min="today"
-              class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm h-10 px-4"
-            />
-          </div>
-
-          <!-- Schedule Display -->
-          <div v-if="scheduleLoading" class="text-center py-8">
-            <div
-              class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500 mx-auto"
-            ></div>
-            <p class="mt-2 text-gray-500">Loading schedule...</p>
-          </div>
-
-          <div v-else-if="vehicleSchedule.length === 0" class="text-center py-8">
-            <p class="text-gray-500">No bookings for this date</p>
-          </div>
-
-          <div v-else class="space-y-4">
-            <div
-              v-for="daySchedule in vehicleSchedule"
-              :key="daySchedule.date"
-              class="border border-gray-200 rounded-lg p-4"
-            >
-              <h4 class="text-md font-medium text-gray-900 mb-3">
-                {{ formatScheduleDate(daySchedule.date) }}
-                <span v-if="daySchedule.is_today" class="ml-2 text-sm text-blue-600"
-                  >(Today)</span
-                >
-                <span v-else-if="daySchedule.is_tomorrow" class="ml-2 text-sm text-green-600"
-                  >(Tomorrow)</span
-                >
-              </h4>
-
-              <div v-if="daySchedule.bookings.length === 0" class="text-gray-500 text-sm">
-                No bookings scheduled
-              </div>
-
-              <div v-else class="space-y-2">
-                <div
-                  v-for="booking in daySchedule.bookings"
-                  :key="booking.id"
-                  class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                >
-                  <div class="flex-1">
-                    <div class="flex items-center space-x-2">
-                      <span class="text-sm font-medium text-gray-900">
-                        {{ booking.time_display }}
-                      </span>
-                      <span
-                        class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
-                        :class="getStatusClass(booking.status)"
-                      >
-                        {{ booking.status }}
-                      </span>
-                    </div>
-                    <div class="text-sm text-gray-600">
-                      {{ booking.user.name }} - {{ booking.destination }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Action Buttons -->
-          <div class="mt-6 flex justify-end space-x-3">
-            <button
-              @click="closeSchedule"
-              class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              Close
-            </button>
-            <button
-              @click="proceedToBooking"
-              class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              style="background-color: #0a2856"
-            >
-              Proceed to Booking
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+      <!-- Complete Booking Confirmation Modal -->
+      <CompleteBookingConfirmationModal
+        v-if="showCompleteConfirmation"
+        :booking="bookingToComplete"
+        @confirm="confirmCompleteBooking"
+        @cancel="cancelCompleteBooking"
+      />
     </div>
   </AppLayout>
 </template>
@@ -520,7 +429,11 @@ import AppLayout from '@/components/Layout/AppLayout.vue'
 import VehicleModal from '@/components/Vehicle/VehicleModal.vue'
 import DeleteConfirmModal from '@/components/Vehicle/DeleteConfirmModal.vue'
 import BookingModal from '@/components/Booking/BookingModal.vue'
+import CompleteBookingConfirmationModal from '@/components/Booking/CompleteBookingConfirmationModal.vue'
+import VehicleScheduleModal from '@/components/Vehicle/VehicleScheduleModal.vue'
+
 import { useAuthStore } from '@/stores/auth'
+import { useNotification } from '@/composables/useNotification'
 import { formatDateID } from '@/utils/datetime'
 
 export default {
@@ -530,9 +443,12 @@ export default {
     VehicleModal,
     DeleteConfirmModal,
     BookingModal,
+    CompleteBookingConfirmationModal,
+    VehicleScheduleModal,
   },
   setup() {
     const authStore = useAuthStore()
+    const { showSuccess, showError } = useNotification()
 
     const vehicles = ref([])
     const loading = ref(false)
@@ -678,56 +594,131 @@ export default {
 
     // Schedule functionality
     const showSchedule = ref(false)
-    const scheduleDate = ref('')
-    const vehicleSchedule = ref([])
-    const scheduleLoading = ref(false)
+
+    // Custom confirmation modal state
+    const showCompleteConfirmation = ref(false)
+    const bookingToComplete = ref(null)
 
     const bookVehicle = async (vehicle) => {
       selectedVehicle.value = vehicle
       showSchedule.value = true
-
-      // Set default date to today
-      const today = new Date()
-      scheduleDate.value = today.toISOString().split('T')[0]
-
-      // Load schedule for today
-      await loadVehicleSchedule()
     }
 
-    const loadVehicleSchedule = async () => {
-      if (!selectedVehicle.value || !scheduleDate.value) return
+    const viewSchedule = async (vehicle) => {
+      selectedVehicle.value = vehicle
+      showSchedule.value = true
+    }
 
-      scheduleLoading.value = true
-      try {
-        const response = await bookingAPI.getSchedule({
-          vehicle_id: selectedVehicle.value.id,
-          date: scheduleDate.value,
-          days: 1,
-        })
-
-        if (response.data.code === 200) {
-          vehicleSchedule.value = response.data.data.schedule
-        } else {
-          vehicleSchedule.value = []
-        }
-      } catch (error) {
-        console.error('Error loading vehicle schedule:', error)
-        vehicleSchedule.value = []
-      } finally {
-        scheduleLoading.value = false
-      }
+    const handleBookingCompleted = (booking) => {
+      // Handle when a booking is completed from the schedule modal
+      console.log('✅ Booking completed from schedule modal:', booking)
+      // Optionally refresh vehicles list if needed
+      fetchVehicles()
     }
 
     const closeSchedule = () => {
       showSchedule.value = false
       selectedVehicle.value = null
-      vehicleSchedule.value = []
     }
 
     const proceedToBooking = () => {
       // Close schedule modal and open booking modal
       showSchedule.value = false
       showBookingModal.value = true
+    }
+
+    const completeBooking = async (booking) => {
+      // Set booking to complete and show custom modal
+      bookingToComplete.value = booking
+      showCompleteConfirmation.value = true
+    }
+
+    const confirmCompleteBooking = async () => {
+      try {
+        const booking = bookingToComplete.value
+
+        // Debug info - Log sebelum action
+        console.log('🚀 Complete Booking Debug - START:', {
+          bookingId: booking.id,
+          currentStatus: booking.status,
+          user: booking.user.name,
+          vehicle: selectedVehicle.value.brand + ' ' + selectedVehicle.value.model,
+          timeDisplay: booking.time_display,
+          destination: booking.destination,
+          authUser: JSON.parse(localStorage.getItem('user')),
+          token: localStorage.getItem('token') ? 'EXISTS' : 'MISSING',
+          tokenLength: localStorage.getItem('token')?.length || 0,
+          isAdmin: authStore.isAdmin,
+          timestamp: new Date().toISOString(),
+        })
+
+        console.log('✅ User confirmed, proceeding with API call...')
+
+        // Call API to complete booking
+        console.log('📡 Making API call to:', `POST /api/bookings/${booking.id}/complete`)
+        const response = await bookingAPI.complete(booking.id)
+
+        console.log('✅ API Response received:', {
+          status: response.status,
+          statusText: response.statusText,
+          data: response.data,
+          headers: response.headers,
+        })
+
+        if (response.data.code === 200) {
+          console.log('🎉 Booking completed successfully!')
+          // Show success message
+          showSuccess('Booking Completed', 'Booking marked as completed successfully!')
+
+          // Close modal and reload schedule
+          showCompleteConfirmation.value = false
+          bookingToComplete.value = null
+
+          // Reload schedule to show updated status
+          console.log('🔄 Reloading schedule...')
+          await loadVehicleSchedule()
+          console.log('✅ Schedule reloaded successfully')
+        } else {
+          console.error('❌ API returned non-200 code:', response.data)
+          showError('Error', 'Failed to complete booking. Please try again.')
+        }
+      } catch (error) {
+        console.error('❌ Error completing booking:', error)
+        console.error('❌ Error details:', {
+          name: error.name,
+          message: error.message,
+          stack: error.stack,
+          response: {
+            status: error.response?.status,
+            statusText: error.response?.statusText,
+            data: error.response?.data,
+            headers: error.response?.headers,
+          },
+          request: {
+            method: error.request?.method,
+            url: error.request?.url,
+            headers: error.request?.headers,
+          },
+          config: {
+            url: error.config?.url,
+            method: error.config?.method,
+            baseURL: error.config?.baseURL,
+            headers: error.config?.headers,
+          },
+        })
+
+        // Handle specific error messages from backend
+        if (error.response?.data?.message) {
+          showError('Error', `Error: ${error.response.data.message}`)
+        } else {
+          showError('Error', 'Error completing booking. Please try again.')
+        }
+      }
+    }
+
+    const cancelCompleteBooking = () => {
+      showCompleteConfirmation.value = false
+      bookingToComplete.value = null
     }
 
     const formatScheduleDate = (dateString) => {
@@ -751,18 +742,6 @@ export default {
       return statusClasses[status] || 'bg-gray-100 text-gray-800'
     }
 
-    // Computed for today's date
-    const today = computed(() => {
-      return new Date().toISOString().split('T')[0]
-    })
-
-    // Watch for date changes to reload schedule
-    watch(scheduleDate, () => {
-      if (selectedVehicle.value && scheduleDate.value) {
-        loadVehicleSchedule()
-      }
-    })
-
     const editVehicle = (vehicle) => {
       editingVehicle.value = { ...vehicle }
     }
@@ -770,11 +749,13 @@ export default {
     const handleVehicleSaved = () => {
       showVehicleModal.value = false
       fetchVehicles()
+      showSuccess('Vehicle Added', 'Vehicle has been added successfully!')
     }
 
     const handleVehicleUpdated = () => {
       editingVehicle.value = null
       fetchVehicles()
+      showSuccess('Vehicle Updated', 'Vehicle has been updated successfully!')
     }
 
     const deleteVehicle = (vehicle) => {
@@ -784,6 +765,7 @@ export default {
     const handleVehicleDeleted = () => {
       deletingVehicle.value = null
       fetchVehicles()
+      showSuccess('Vehicle Deleted', 'Vehicle has been deleted successfully!')
     }
 
     // Reset to page 1 when filters change
@@ -885,6 +867,7 @@ export default {
       formatDate,
       getStatusClass,
       bookVehicle,
+      viewSchedule,
       editVehicle,
       handleVehicleSaved,
       handleVehicleUpdated,
@@ -903,14 +886,18 @@ export default {
       getPageNumbers,
       // schedule functionality
       showSchedule,
-      scheduleDate,
-      vehicleSchedule,
-      scheduleLoading,
       closeSchedule,
       proceedToBooking,
-      formatScheduleDate,
-      loadVehicleSchedule, // ← TAMBAHKAN INI
-      today, // ← TAMBAHKAN INI - ini yang menyebabkan error
+      completeBooking,
+      handleBookingCompleted,
+      // Custom confirmation modal state
+      showCompleteConfirmation,
+      bookingToComplete,
+      confirmCompleteBooking,
+      cancelCompleteBooking,
+      // notification functions
+      showSuccess,
+      showError,
     }
   },
 }

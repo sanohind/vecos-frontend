@@ -182,6 +182,7 @@
                 >
                   <option value="" class="text-gray-900">All Time</option>
                   <option value="today" class="text-gray-900">Today</option>
+                  <option value="tomorrow" class="text-gray-900">Tomorrow</option>
                   <option value="week" class="text-gray-900">This Week</option>
                   <option value="month" class="text-gray-900">This Month</option>
                 </select>
@@ -409,6 +410,7 @@ import BookingModal from '@/components/Booking/BookingModal.vue'
 import VehicleSelectionModal from '@/components/Booking/VehicleSelectionModal.vue'
 import EditBookingModal from '@/components/Booking/EditBookingModal.vue'
 import DeleteBookingModal from '@/components/Booking/DeleteBookingModal.vue'
+import { useNotification } from '@/composables/useNotification'
 
 export default {
   name: 'MyBookingsView',
@@ -420,6 +422,8 @@ export default {
     DeleteBookingModal,
   },
   setup() {
+    const { showSuccess, showError } = useNotification()
+
     const bookings = ref([])
     const loading = ref(false)
     const showBookingModal = ref(false)
@@ -467,6 +471,11 @@ export default {
           switch (filters.value.dateFrom) {
             case 'today':
               fromDate = today
+              break
+            case 'tomorrow':
+              const tomorrow = new Date(today)
+              tomorrow.setDate(today.getDate() + 1)
+              fromDate = tomorrow
               break
             case 'week':
               fromDate = startOfWeek
@@ -538,6 +547,11 @@ export default {
         switch (filters.value.dateFrom) {
           case 'today':
             fromDate = today
+            break
+          case 'tomorrow':
+            const tomorrow = new Date(today)
+            tomorrow.setDate(today.getDate() + 1)
+            fromDate = tomorrow
             break
           case 'week':
             fromDate = startOfWeek
@@ -624,6 +638,7 @@ export default {
     const handleBookingSuccess = () => {
       selectedVehicle.value = null
       fetchBookings()
+      showSuccess('Booking Created', 'Your booking has been created successfully!')
     }
 
     const editBooking = (booking) => {
@@ -633,6 +648,7 @@ export default {
     const handleBookingUpdated = () => {
       editingBooking.value = null
       fetchBookings()
+      showSuccess('Booking Updated', 'Your booking has been updated successfully!')
     }
 
     const deleteBooking = (booking) => {
@@ -642,6 +658,7 @@ export default {
     const handleBookingDeleted = () => {
       deletingBooking.value = null
       fetchBookings()
+      showSuccess('Booking Cancelled', 'Your booking has been cancelled successfully!')
     }
 
     // Reset to page 1 when filters change
@@ -688,6 +705,8 @@ export default {
       handleBookingUpdated,
       deleteBooking,
       handleBookingDeleted,
+      showSuccess,
+      showError,
     }
   },
 }

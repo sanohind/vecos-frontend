@@ -76,6 +76,7 @@
             >
               <option value="" class="text-gray-900">All Time</option>
               <option value="today" class="text-gray-900">Today</option>
+              <option value="tomorrow" class="text-gray-900">Tomorrow</option>
               <option value="week" class="text-gray-900">This Week</option>
               <option value="month" class="text-gray-900">This Month</option>
             </select>
@@ -451,6 +452,7 @@ import ViewBookingModal from '@/components/Booking/ViewBookingModal.vue'
 import ConfirmActionModal from '@/components/Booking/ConfirmActionModal.vue'
 import { bookingAPI } from '@/services/api'
 import { formatDateID, formatTimeID, parseDbDateTimeToLocalDate } from '@/utils/datetime'
+import { useNotification } from '@/composables/useNotification'
 
 export default {
   name: 'BookingsView',
@@ -460,6 +462,8 @@ export default {
     ConfirmActionModal,
   },
   setup() {
+    const { showSuccess, showError } = useNotification()
+
     const loading = ref(false)
     const bookings = ref([]) // Store current page bookings
     const stats = ref({})
@@ -517,6 +521,12 @@ export default {
             case 'today':
               params.start_date = formatDate(today)
               params.end_date = formatDate(today)
+              break
+            case 'tomorrow':
+              const tomorrow = new Date(today)
+              tomorrow.setDate(today.getDate() + 1)
+              params.start_date = formatDate(tomorrow)
+              params.end_date = formatDate(tomorrow)
               break
             case 'week':
               params.start_date = formatDate(startOfWeek)
@@ -690,10 +700,10 @@ export default {
         const bookingId = selectedBooking.value.id
         if (confirmActionType.value === 'approve') {
           await bookingAPI.approve(bookingId)
-          // Show success message or notification here if needed
+          showSuccess('Booking Approved', 'Booking has been approved successfully!')
         } else if (confirmActionType.value === 'reject') {
           await bookingAPI.reject(bookingId)
-          // Show success message or notification here if needed
+          showSuccess('Booking Rejected', 'Booking has been rejected successfully!')
         }
         await loadBookings() // Reload all bookings to get updated data
         // Reset state
@@ -701,7 +711,7 @@ export default {
         confirmActionType.value = null
       } catch (error) {
         console.error('Error processing booking:', error)
-        // Show error message or notification here if needed
+        showError('Error', 'Failed to process booking. Please try again.')
       }
     }
 
@@ -818,6 +828,8 @@ export default {
       confirmAction,
       handleConfirm,
       resetFilters,
+      showSuccess,
+      showError,
     }
   },
 }

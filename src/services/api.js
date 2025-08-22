@@ -69,6 +69,7 @@ export const bookingAPI = {
   delete: (id) => api.delete(`/bookings/${id}`),
   approve: (id) => api.post(`/bookings/${id}/approve`),
   reject: (id) => api.post(`/bookings/${id}/reject`),
+  complete: (bookingId) => api.post(`/bookings/${bookingId}/complete`),
 }
 
 export default api

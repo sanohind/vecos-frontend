@@ -215,7 +215,7 @@
         <!-- Available Vehicles -->
         <div class="bg-white shadow-sm rounded-lg border border-gray-200">
           <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-            <h3 class="text-lg font-medium text-gray-900">Active Vehicles List</h3>
+            <h3 class="text-lg font-medium text-gray-900">Available Vehicles List</h3>
             <router-link
               to="/vehicles"
               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
@@ -276,20 +276,28 @@
                     </p>
                   </div>
                 </div>
-                <div v-if="!authStore.isAdmin">
-                  <button
+                <div v-if="!authStore.isAdmin" class="me-2">
+                  <span
                     @click="bookVehicle(vehicle)"
-                    class="inline-flex items-center px-3 py-2 border border-transparent text-xs leading-4 font-medium rounded-md text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-opacity-50"
-                    style="background-color: #0a2856"
+                    class="text-green-500 hover:text-green-600 cursor-pointer font-medium text-sm"
                   >
                     Book
-                  </button>
+                  </span>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      <!-- Vehicle Schedule Modal -->
+      <VehicleScheduleModal
+        :is-visible="showSchedule"
+        :vehicle="selectedVehicle"
+        :show-proceed-button="true"
+        @close="closeSchedule"
+        @proceed-to-booking="proceedToBooking"
+      />
 
       <!-- Booking Modal -->
       <BookingModal
@@ -298,122 +306,6 @@
         @close="showBookingModal = false"
         @booked="handleBookingCreated"
       />
-
-      <!-- Vehicle Schedule Modal -->
-      <div v-if="selectedVehicle && showSchedule" class="fixed inset-0 z-[9999] overflow-y-auto">
-        <div
-          class="flex items-center justify-center min-h-screen px-4 pt-24 pb-8 text-center sm:block sm:pt-20"
-        >
-          <!-- Background overlay -->
-          <div
-            class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
-            @click="closeSchedule"
-          ></div>
-
-          <!-- Schedule Modal -->
-          <div
-            class="inline-block align-middle bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full sm:p-6"
-          >
-            <div class="sm:flex sm:items-start">
-              <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
-                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
-                  Schedule for {{ selectedVehicle.brand }} {{ selectedVehicle.model }}
-                </h3>
-
-                <!-- Date Selection -->
-                <div class="mb-6">
-                  <label for="schedule-date" class="block text-sm font-medium text-gray-700 mb-2">
-                    Select Date
-                  </label>
-                  <input
-                    id="schedule-date"
-                    v-model="scheduleDate"
-                    type="date"
-                    :min="today"
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm h-10 px-4"
-                  />
-                </div>
-
-                <!-- Schedule Display -->
-                <div v-if="scheduleLoading" class="text-center py-8">
-                  <div
-                    class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500 mx-auto"
-                  ></div>
-                  <p class="mt-2 text-gray-500">Loading schedule...</p>
-                </div>
-
-                <div v-else-if="vehicleSchedule.length === 0" class="text-center py-8">
-                  <p class="text-gray-500">No bookings for this date</p>
-                </div>
-
-                <div v-else class="space-y-4">
-                  <div
-                    v-for="daySchedule in vehicleSchedule"
-                    :key="daySchedule.date"
-                    class="border border-gray-200 rounded-lg p-4"
-                  >
-                    <h4 class="text-md font-medium text-gray-900 mb-3">
-                      {{ formatScheduleDate(daySchedule.date) }}
-                      <span v-if="daySchedule.is_today" class="ml-2 text-sm text-blue-600"
-                        >(Today)</span
-                      >
-                      <span v-else-if="daySchedule.is_tomorrow" class="ml-2 text-sm text-green-600"
-                        >(Tomorrow)</span
-                      >
-                    </h4>
-
-                    <div v-if="daySchedule.bookings.length === 0" class="text-gray-500 text-sm">
-                      No bookings scheduled
-                    </div>
-
-                    <div v-else class="space-y-2">
-                      <div
-                        v-for="booking in daySchedule.bookings"
-                        :key="booking.id"
-                        class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                      >
-                        <div class="flex-1">
-                          <div class="flex items-center space-x-2">
-                            <span class="text-sm font-medium text-gray-900">
-                              {{ booking.time_display }}
-                            </span>
-                            <span
-                              class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
-                              :class="getStatusClass(booking.status)"
-                            >
-                              {{ booking.status }}
-                            </span>
-                          </div>
-                          <div class="text-sm text-gray-600">
-                            {{ booking.user.name }} - {{ booking.destination }}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="mt-6 flex justify-end space-x-3">
-                  <button
-                    @click="closeSchedule"
-                    class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  >
-                    Close
-                  </button>
-                  <button
-                    @click="proceedToBooking"
-                    class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                    style="background-color: #0a2856"
-                  >
-                    Proceed to Booking
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <!-- Booking Schedule -->
       <div class="mt-8 bg-white shadow-sm rounded-lg border border-gray-200">
@@ -461,6 +353,7 @@
             </router-link>
           </div>
         </div>
+
         <div class="p-6">
           <div v-if="scheduleData.length === 0" class="text-center py-8">
             <svg
@@ -524,7 +417,8 @@
                 No bookings for this day.
               </div>
 
-              <div v-else class="space-y-3">
+              <!-- Scrollable Bookings List -->
+              <div v-else class="max-h-[600px] overflow-y-auto space-y-3">
                 <div
                   v-for="booking in day.bookings"
                   :key="`${day.date}-${booking.id}`"
@@ -629,15 +523,20 @@ import {
   parseDbDateTimeToLocalDate,
 } from '@/utils/datetime'
 import BookingModal from '@/components/Booking/BookingModal.vue'
+import VehicleScheduleModal from '@/components/Vehicle/VehicleScheduleModal.vue'
+import { useNotification } from '@/composables/useNotification'
 
 export default {
   name: 'DashboardView',
   components: {
     AppLayout,
     BookingModal,
+    VehicleScheduleModal,
   },
   setup() {
     const authStore = useAuthStore()
+    const { showSuccess, showError } = useNotification()
+
     const stats = ref({})
     const recentBookings = ref([])
     const availableVehicles = ref([])
@@ -647,9 +546,6 @@ export default {
     const showBookingModal = ref(false)
     const selectedVehicle = ref(null)
     const showSchedule = ref(false)
-    const scheduleDate = ref(null)
-    const scheduleLoading = ref(false)
-    const vehicleSchedule = ref([])
 
     const today = computed(() => {
       return new Date().toISOString().split('T')[0]
@@ -685,38 +581,72 @@ export default {
           return
         }
 
-        const [vehiclesResponse, bookingsResponse, statsResponse] = await Promise.all([
-          vehicleAPI.getAllWithoutPagination(), // Use this to get all vehicles for accurate stats
-          bookingAPI.getAll({ per_page: 5 }), // Use per_page instead of limit for recent bookings
-          bookingAPI.getStats(), // Use this for accurate booking counts
-        ])
+        // Get today's date for checking current bookings
+        const today = new Date()
+        const yyyy = today.getFullYear()
+        const mm = String(today.getMonth() + 1).padStart(2, '0')
+        const dd = String(today.getDate()).padStart(2, '0')
+        const todayStr = `${yyyy}-${mm}-${dd}`
+
+        const [vehiclesResponse, bookingsResponse, statsResponse, scheduleResponse] =
+          await Promise.all([
+            vehicleAPI.getAllWithoutPagination(), // Get all vehicles for total count
+            bookingAPI.getAll({ per_page: 5 }), // Recent bookings for display
+            bookingAPI.getStats(), // Booking stats
+            bookingAPI.getSchedule({ date: todayStr, days: 1 }), // Today's schedule for availability check
+          ])
 
         console.log('🚗 Vehicles response:', vehiclesResponse.data)
         console.log('📅 Bookings response:', bookingsResponse.data)
         console.log('📊 Stats response:', statsResponse.data)
+        console.log('📅 Schedule response:', scheduleResponse.data)
+
+        // Get all active vehicles
+        const allActiveVehicles = (vehiclesResponse.data?.data?.data || []).filter(
+          (v) => v.status === 'active',
+        )
+
+        // Build a set of vehicle IDs that are currently booked (pending or approved)
+        const now = new Date()
+        const schedule = scheduleResponse.data?.data?.schedule || []
+        const busyVehicleIds = new Set()
+
+        schedule.forEach((day) => {
+          ;(day.bookings || []).forEach((booking) => {
+            // Check if booking is currently active (ongoing)
+            const start = parseDbDateTimeToLocalDate(booking.start_time)
+            const end = parseDbDateTimeToLocalDate(booking.end_time)
+
+            if (start && end && now >= start && now < end) {
+              const vehicleId = booking.vehicle?.id
+              if (vehicleId) {
+                busyVehicleIds.add(vehicleId)
+              }
+            }
+          })
+        })
+
+        // Calculate truly available vehicles (active vehicles NOT currently booked)
+        const availableVehiclesCount = allActiveVehicles.filter(
+          (vehicle) => !busyVehicleIds.has(vehicle.id),
+        ).length
 
         stats.value = {
           totalVehicles: vehiclesResponse.data.data.data.length,
-          availableVehicles: vehiclesResponse.data.data.data.filter((v) => v.status === 'active')
-            .length,
-          // Use stats API for accurate booking counts (works for both admin and user)
-          // Admin: sees total bookings from all users
-          // User: sees only their own bookings (handled by backend)
+          availableVehicles: availableVehiclesCount, // Updated to show real availability
           myBookings: statsResponse.data.data.total || 0,
           pendingBookings: statsResponse.data.data.pending || 0,
         }
 
         // Recent bookings for display (limited to 5 for performance)
-        recentBookings.value = bookingsResponse.data.data.data.slice(0, 5) // Ensure only 5 items
+        recentBookings.value = bookingsResponse.data.data.data.slice(0, 5)
 
         console.log('✅ Dashboard data loaded successfully:', stats.value)
-        console.log('🔍 Role-based booking counts:', {
+        console.log('🔍 Availability calculation:', {
+          totalActiveVehicles: allActiveVehicles.length,
+          busyVehicleIds: Array.from(busyVehicleIds),
+          availableCount: availableVehiclesCount,
           userRole: authStore.isAdmin ? 'Admin' : 'User',
-          totalBookings: stats.value.myBookings,
-          pendingBookings: stats.value.pendingBookings,
-          recentBookingsCount: recentBookings.value.length,
-          recentBookingsFromAPI: bookingsResponse.data.data.data.length,
-          statsFromAPI: statsResponse.data.data,
         })
       } catch (error) {
         console.error('❌ Error loading dashboard data:', error)
@@ -996,40 +926,6 @@ export default {
     const bookVehicle = (vehicle) => {
       selectedVehicle.value = vehicle
       showSchedule.value = true
-      // default date to today and load schedule immediately
-      const d = new Date()
-      const todayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(
-        d.getDate(),
-      ).padStart(2, '0')}`
-      scheduleDate.value = todayStr
-      vehicleSchedule.value = []
-      scheduleLoading.value = true
-      loadVehicleSchedule()
-    }
-
-    const loadVehicleSchedule = async () => {
-      if (!scheduleDate.value) {
-        // Defensive: should not happen since we preset today
-        scheduleDate.value = new Date().toISOString().split('T')[0]
-      }
-      try {
-        const response = await bookingAPI.getSchedule({
-          vehicle_id: selectedVehicle.value?.id,
-          date: scheduleDate.value,
-          days: 1,
-        })
-        if (response.data.code === 200) {
-          vehicleSchedule.value = response.data.data.schedule
-        } else {
-          console.error('❌ Error loading vehicle schedule:', response.data)
-          vehicleSchedule.value = []
-        }
-      } catch (error) {
-        console.error('❌ Error loading vehicle schedule:', error)
-        vehicleSchedule.value = []
-      } finally {
-        scheduleLoading.value = false
-      }
     }
 
     const proceedToBooking = () => {
@@ -1043,14 +939,13 @@ export default {
       showSchedule.value = false
       scheduleDate.value = null
       vehicleSchedule.value = []
+      showSuccess('Booking Created', 'Your booking has been created successfully!')
       loadCalendarBookings() // Refresh schedule to show new booking
     }
 
     const closeSchedule = () => {
       showSchedule.value = false
       selectedVehicle.value = null
-      scheduleDate.value = null
-      vehicleSchedule.value = []
     }
 
     const formatScheduleDate = (dateString) => {
@@ -1108,17 +1003,14 @@ export default {
       // Schedule modal functions
       selectedVehicle,
       showSchedule,
-      scheduleDate,
-      vehicleSchedule,
-      scheduleLoading,
       bookVehicle,
       closeSchedule,
       proceedToBooking,
-      formatScheduleDate, // ← TAMBAHKAN INI - ini yang menyebabkan error
-      loadVehicleSchedule, // ← TAMBAHKAN INI
       today,
       showBookingModal,
       handleBookingCreated,
+      showSuccess,
+      showError,
     }
   },
 }

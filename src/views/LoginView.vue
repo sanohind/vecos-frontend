@@ -160,6 +160,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useNotification } from '@/composables/useNotification'
 import sanohLogo from '@/assets/sanoh-logo.png'
 
 export default {
@@ -167,6 +168,7 @@ export default {
   setup() {
     const router = useRouter()
     const authStore = useAuthStore()
+    const { showSuccess, showError } = useNotification()
 
     const form = ref({
       email: '',
@@ -187,13 +189,16 @@ export default {
         const result = await authStore.login(form.value)
 
         if (result.success) {
+          showSuccess('Login Successful', 'Welcome back!')
           router.push('/dashboard')
         } else {
           errorMessage.value = result.message
           errors.value = result.errors || {}
+          showError('Login Failed', result.message)
         }
       } catch {
         errorMessage.value = 'An unexpected error occurred'
+        showError('Login Error', 'An unexpected error occurred')
       } finally {
         loading.value = false
       }
@@ -207,6 +212,8 @@ export default {
       handleLogin,
       sanohLogo,
       showPassword,
+      showSuccess,
+      showError,
     }
   },
 }

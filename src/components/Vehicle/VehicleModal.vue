@@ -47,14 +47,43 @@
                   Brand
                 </label>
                 <div class="relative">
-                  <div class="relative">
+                  <!-- Search Input (visible when searching) -->
+                  <div v-if="isSearching" class="relative">
+                    <input
+                      type="text"
+                      v-model="brandSearchQuery"
+                      placeholder="Type to search brands..."
+                      class="w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 text-sm transition-colors"
+                      @input="filterBrandSuggestions"
+                      @blur="handleSearchBlur"
+                      @keydown.escape="closeSearch"
+                      @keydown.enter.prevent="selectFirstBrand"
+                      ref="searchInput"
+                    />
+                    <!-- Dropdown list -->
+                    <div class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                      <div
+                        v-for="brand in filteredBrands"
+                        :key="brand"
+                        @mousedown.prevent="selectBrand(brand)"
+                        class="px-3 py-2 hover:bg-blue-50 cursor-pointer text-gray-900 text-sm"
+                      >
+                        {{ brand }}
+                      </div>
+                      <div v-if="filteredBrands.length === 0" class="px-3 py-2 text-gray-500 text-sm">
+                        No brands found
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Select Dropdown (visible when not searching) -->
+                  <div v-else class="relative">
                     <select
                       id="brand"
                       v-model="form.brand"
                       required
                       class="w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 text-sm appearance-none cursor-pointer bg-white pr-10 transition-colors"
                       :class="{ 'border-red-500 focus:ring-red-500': errors.brand }"
-                      @focus="openBrandSelect"
                     >
                       <option value="" disabled>Select a brand</option>
                       <option v-for="brand in filteredBrands" :key="brand" :value="brand">
@@ -77,17 +106,17 @@
                         />
                       </svg>
                     </div>
-                    <div v-show="isSearching" class="absolute inset-x-0 top-0 z-10">
-                      <input
-                        type="text"
-                        v-model="brandSearchQuery"
-                        placeholder="Type to search brands..."
-                        class="w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 text-sm transition-colors"
-                        @input="filterBrandSuggestions"
-                        ref="searchInput"
-                      />
-                    </div>
                   </div>
+
+                  <!-- Search button -->
+                  <button
+                    type="button"
+                    @click="toggleSearch"
+                    class="absolute right-8 top-3 text-blue-600 hover:text-blue-800 text-xs font-medium"
+                    :class="{ 'top-3': !isSearching }"
+                  >
+                    {{ isSearching ? 'Cancel' : 'Search' }}
+                  </button>
                 </div>
                 <span v-if="errors.brand" class="text-red-500 text-xs mt-1 block">
                   {{ errors.brand[0] }}
@@ -261,13 +290,45 @@ export default {
     const isSearching = ref(false)
     const filteredBrands = ref([...commonBrands])
 
-    const openBrandSelect = () => {
-      isSearching.value = true
-      nextTick(() => {
-        if (searchInput.value) {
-          searchInput.value.focus()
+    const toggleSearch = () => {
+      isSearching.value = !isSearching.value
+      if (isSearching.value) {
+        brandSearchQuery.value = form.value.brand || ''
+        nextTick(() => {
+          if (searchInput.value) {
+            searchInput.value.focus()
+          }
+        })
+      } else {
+        brandSearchQuery.value = ''
+        filteredBrands.value = [...commonBrands]
+      }
+    }
+
+    const closeSearch = () => {
+      isSearching.value = false
+      brandSearchQuery.value = ''
+      filteredBrands.value = [...commonBrands]
+    }
+
+    const selectBrand = (brand) => {
+      form.value.brand = brand
+      closeSearch()
+    }
+
+    const selectFirstBrand = () => {
+      if (filteredBrands.value.length > 0) {
+        selectBrand(filteredBrands.value[0])
+      }
+    }
+
+    const handleSearchBlur = () => {
+      // Delay to allow click events on dropdown items
+      setTimeout(() => {
+        if (isSearching.value) {
+          closeSearch()
         }
-      })
+      }, 200)
     }
 
     const filterBrandSuggestions = (event) => {
@@ -278,18 +339,6 @@ export default {
         filteredBrands.value = [...commonBrands]
       }
     }
-
-    // Watch for brand selection to close search
-    watch(
-      () => form.value.brand,
-      (newBrand) => {
-        if (newBrand) {
-          isSearching.value = false
-          brandSearchQuery.value = ''
-          filteredBrands.value = [...commonBrands]
-        }
-      },
-    )
 
     // Initialize form with vehicle data if editing
     watch(
@@ -393,7 +442,11 @@ export default {
       brandSearchQuery,
       searchInput,
       filteredBrands,
-      openBrandSelect,
+      toggleSearch,
+      closeSearch,
+      selectBrand,
+      selectFirstBrand,
+      handleSearchBlur,
     }
   },
 }

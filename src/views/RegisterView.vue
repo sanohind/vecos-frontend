@@ -315,12 +315,14 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useNotification } from '@/composables/useNotification'
 
 export default {
   name: 'RegisterView',
   setup() {
     const router = useRouter()
     const authStore = useAuthStore()
+    const { showSuccess, showError } = useNotification()
 
     const form = ref({
       name: '',
@@ -347,18 +349,21 @@ export default {
       // Basic validation
       if (!/^\d{6,9}$/.test(form.value.nik)) {
         errors.value.nik = ['NIK must be 6-9 digits.']
+        showError('Validation Error', 'NIK must be 6-9 digits.')
         loading.value = false
         return
       }
 
       if (form.value.password !== form.value.password_confirmation) {
         errorMessage.value = 'Passwords do not match'
+        showError('Validation Error', 'Passwords do not match')
         loading.value = false
         return
       }
 
       if (form.value.password.length < 8) {
         errorMessage.value = 'Password must be at least 8 characters long'
+        showError('Validation Error', 'Password must be at least 8 characters long')
         loading.value = false
         return
       }
@@ -368,6 +373,10 @@ export default {
 
         if (result.success) {
           successMessage.value = 'Account created successfully! You can now sign in.'
+          showSuccess(
+            'Registration Successful',
+            'Account created successfully! You can now sign in.',
+          )
 
           // Reset form
           form.value = {
@@ -386,10 +395,12 @@ export default {
         } else {
           errorMessage.value = result.message
           errors.value = result.errors || {}
+          showError('Registration Failed', result.message)
         }
       } catch (error) {
         console.error('Registration error:', error)
         errorMessage.value = 'An unexpected error occurred'
+        showError('Registration Error', 'An unexpected error occurred')
       } finally {
         loading.value = false
       }
@@ -404,6 +415,8 @@ export default {
       handleRegister,
       showPassword,
       showConfirmPassword,
+      showSuccess,
+      showError,
     }
   },
 }
