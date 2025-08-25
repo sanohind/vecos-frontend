@@ -255,7 +255,7 @@ export default {
     const fetchAvailableVehicles = async () => {
       loading.value = true
       try {
-        const response = await vehicleAPI.getAll({ status: 'active' })
+        const response = await vehicleAPI.getAllWithoutPagination({ status: 'active' })
         if (response.data.code === 200) {
           vehicles.value = response.data.data.data || []
         } else {
