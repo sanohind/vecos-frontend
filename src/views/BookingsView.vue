@@ -404,6 +404,10 @@
                 stats.completed || 0
               }}</span>
             </div>
+            <div class="flex justify-between">
+              <span class="text-sm text-gray-600">Cancelled:</span>
+              <span class="text-sm font-medium text-gray-600">{{ stats.cancelled || 0 }}</span>
+            </div>
           </div>
           <div class="mt-6">
             <button

@@ -32,7 +32,7 @@
       </div>
 
       <!-- Booking Stats -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
         <div class="bg-white overflow-hidden shadow rounded-lg">
           <div class="p-5">
             <div class="flex items-center">
@@ -126,6 +126,30 @@
                 <dl>
                   <dt class="text-sm font-medium text-gray-500 truncate">Rejected</dt>
                   <dd class="text-lg font-medium text-gray-900">{{ rejectedBookings }}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+          <div class="p-5">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-gray-500 rounded-md flex items-center justify-center">
+                  <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fill-rule="evenodd"
+                      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                      clip-rule="evenodd"
+                    ></path>
+                  </svg>
+                </div>
+              </div>
+              <div class="ml-5 w-0 flex-1">
+                <dl>
+                  <dt class="text-sm font-medium text-gray-500 truncate">Cancelled</dt>
+                  <dd class="text-lg font-medium text-gray-900">{{ cancelledBookings }}</dd>
                 </dl>
               </div>
             </div>
@@ -283,20 +307,29 @@
                 </div>
 
                 <!-- Action Buttons - Only show if pending -->
-                <div v-if="booking.status === 'pending'" class="flex space-x-3">
+                <div class="flex space-x-3">
                   <button
-                    @click="editBooking(booking)"
+                    @click="viewBooking(booking)"
                     class="text-sm font-medium hover:opacity-80"
                     style="color: #0a2856"
                   >
-                    Edit
+                    View
                   </button>
-                  <button
-                    @click="deleteBooking(booking)"
-                    class="text-red-600 hover:text-red-900 text-sm font-medium"
-                  >
-                    Cancel
-                  </button>
+                  <div v-if="booking.status === 'pending'" class="flex space-x-3">
+                    <button
+                      @click="editBooking(booking)"
+                      class="text-sm font-medium hover:opacity-80"
+                      style="color: #0a2856"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      @click="deleteBooking(booking)"
+                      class="text-red-600 hover:text-red-900 text-sm font-medium"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -310,6 +343,9 @@
                   <p class="text-sm text-gray-600">
                     <strong>End:</strong> {{ formatDateTime(booking.end_time) }}
                   </p>
+                  <p v-if="booking.destination" class="text-sm text-gray-600">
+                    <strong>Destination:</strong> {{ booking.destination }}
+                  </p>
                 </div>
 
                 <!-- Duration and Purpose -->
@@ -318,8 +354,8 @@
                     <strong>Duration:</strong>
                     {{ getDuration(booking.start_time, booking.end_time) }}
                   </p>
-                  <p v-if="booking.purpose" class="text-sm text-gray-600">
-                    <strong>Purpose:</strong> {{ booking.purpose }}
+                  <p v-if="booking.notes" class="text-sm text-gray-600">
+                    <strong>Notes:</strong> {{ booking.notes }}
                   </p>
                 </div>
               </div>
@@ -396,6 +432,14 @@
         @close="deletingBooking = null"
         @confirmed="handleBookingDeleted"
       />
+
+      <!-- View Booking Modal -->
+      <ViewBookingModal
+        v-if="viewingBooking"
+        :booking="viewingBooking"
+        :show-user-info="authStore.isAdmin"
+        @close="viewingBooking = null"
+      />
     </div>
   </AppLayout>
 </template>
@@ -410,7 +454,9 @@ import BookingModal from '@/components/Booking/BookingModal.vue'
 import VehicleSelectionModal from '@/components/Booking/VehicleSelectionModal.vue'
 import EditBookingModal from '@/components/Booking/EditBookingModal.vue'
 import DeleteBookingModal from '@/components/Booking/DeleteBookingModal.vue'
+import ViewBookingModal from '@/components/Booking/ViewBookingModal.vue'
 import { useNotification } from '@/composables/useNotification'
+import { useAuthStore } from '@/stores/auth'
 
 export default {
   name: 'MyBookingsView',
@@ -420,9 +466,11 @@ export default {
     VehicleSelectionModal,
     EditBookingModal,
     DeleteBookingModal,
+    ViewBookingModal,
   },
   setup() {
     const { showSuccess, showError } = useNotification()
+    const authStore = useAuthStore()
 
     const bookings = ref([])
     const loading = ref(false)
@@ -430,6 +478,7 @@ export default {
     const selectedVehicle = ref(null)
     const editingBooking = ref(null)
     const deletingBooking = ref(null)
+    const viewingBooking = ref(null)
     const currentPage = ref(1)
     const itemsPerPage = ref(10)
     const totalCount = ref(0) // Add total count for pagination
@@ -588,6 +637,10 @@ export default {
       return bookings.value.filter((b) => b.status === 'rejected').length
     })
 
+    const cancelledBookings = computed(() => {
+      return bookings.value.filter((b) => b.status === 'cancelled').length
+    })
+
     const resetFilters = () => {
       filters.value = {
         search: '',
@@ -622,6 +675,8 @@ export default {
         pending: 'bg-yellow-100 text-yellow-800',
         approved: 'bg-green-100 text-green-800',
         rejected: 'bg-red-100 text-red-800',
+        completed: 'bg-blue-100 text-blue-800',
+        cancelled: 'bg-gray-100 text-gray-800',
       }
       return statusClasses[status] || 'bg-gray-100 text-gray-800'
     }
@@ -661,6 +716,10 @@ export default {
       showSuccess('Booking Cancelled', 'Your booking has been cancelled successfully!')
     }
 
+    const viewBooking = (booking) => {
+      viewingBooking.value = booking
+    }
+
     // Reset to page 1 when filters change
     watch(
       filters,
@@ -685,6 +744,7 @@ export default {
       selectedVehicle,
       editingBooking,
       deletingBooking,
+      viewingBooking,
       currentPage,
       itemsPerPage,
       filters,
@@ -692,6 +752,7 @@ export default {
       pendingBookings,
       approvedBookings,
       rejectedBookings,
+      cancelledBookings,
       totalCount,
       resetFilters,
       changePage,
@@ -705,6 +766,7 @@ export default {
       handleBookingUpdated,
       deleteBooking,
       handleBookingDeleted,
+      viewBooking,
       showSuccess,
       showError,
     }

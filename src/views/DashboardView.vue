@@ -5,8 +5,11 @@
       <!-- Header -->
       <div class="mb-8">
         <h1 class="text-3xl font-semibold text-gray-900">Dashboard</h1>
-        <p class="mt-2 text-gray-600">
+        <p class="mt-2 text-gray-600" v-if="!authStore.isAdmin">
           Welcome back, {{ authStore.userName }}! Here's an overview of your vehicle bookings.
+        </p>
+        <p class="mt-2 text-gray-600" v-else>
+          Welcome back, {{ authStore.userName }}! Here's an overview of all vehicle bookings.
         </p>
       </div>
 

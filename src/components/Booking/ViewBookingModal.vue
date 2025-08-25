@@ -21,14 +21,18 @@
             class="text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md p-1"
           >
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
 
         <!-- Content -->
         <div class="px-6 py-4 space-y-4 max-h-[70vh] overflow-y-auto">
-          
           <!-- Status Badge -->
           <div class="flex items-center justify-between">
             <span class="text-sm font-medium text-gray-600">Status</span>
@@ -42,21 +46,27 @@
 
           <!-- Vehicle Information -->
           <div class="space-y-2">
-            <h4 class="text-sm font-semibold text-gray-900 border-b border-gray-100 pb-1">Vehicle</h4>
+            <h4 class="text-sm font-semibold text-gray-900 border-b border-gray-100 pb-1">
+              Vehicle
+            </h4>
             <div class="grid grid-cols-2 gap-3 text-sm">
               <div>
                 <span class="text-gray-500">Model</span>
-                <p class="font-medium text-gray-900">{{ booking.vehicle?.brand }} {{ booking.vehicle?.model }}</p>
+                <p class="font-medium text-gray-900">
+                  {{ booking.vehicle?.brand }} {{ booking.vehicle?.model }}
+                </p>
               </div>
               <div>
                 <span class="text-gray-500">Plate</span>
-                <p class="font-mono text-gray-900 bg-gray-50 px-2 py-1 rounded text-xs">{{ booking.vehicle?.plat_no }}</p>
+                <p class="font-mono text-gray-900 bg-gray-50 px-2 py-1 rounded text-xs">
+                  {{ booking.vehicle?.plat_no }}
+                </p>
               </div>
             </div>
           </div>
 
           <!-- User Information -->
-          <div class="space-y-2">
+          <div v-if="showUserInfo" class="space-y-2">
             <h4 class="text-sm font-semibold text-gray-900 border-b border-gray-100 pb-1">User</h4>
             <div class="space-y-2 text-sm">
               <div class="flex justify-between">
@@ -76,7 +86,9 @@
 
           <!-- Booking Information -->
           <div class="space-y-2">
-            <h4 class="text-sm font-semibold text-gray-900 border-b border-gray-100 pb-1">Details</h4>
+            <h4 class="text-sm font-semibold text-gray-900 border-b border-gray-100 pb-1">
+              Details
+            </h4>
             <div class="space-y-2 text-sm">
               <div class="flex justify-between">
                 <span class="text-gray-500">Destination</span>
@@ -84,7 +96,9 @@
               </div>
               <div class="flex justify-between">
                 <span class="text-gray-500">Duration</span>
-                <span class="text-gray-900">{{ getDuration(booking.start_time, booking.end_time) }}</span>
+                <span class="text-gray-900">{{
+                  getDuration(booking.start_time, booking.end_time)
+                }}</span>
               </div>
               <div class="flex justify-between">
                 <span class="text-gray-500">Start</span>
@@ -142,16 +156,20 @@ export default {
       type: Object,
       required: true,
     },
+    showUserInfo: {
+      type: Boolean,
+      default: true,
+    },
   },
   emits: ['close'],
   setup() {
     const formatDateTime = (dateString) => {
       if (!dateString) return 'Not set'
-      return formatDateTimeID(dateString, { 
-        month: 'short', 
+      return formatDateTimeID(dateString, {
+        month: 'short',
         day: 'numeric',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
       })
     }
 
