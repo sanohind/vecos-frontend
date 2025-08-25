@@ -437,7 +437,7 @@
       <ViewBookingModal
         v-if="viewingBooking"
         :booking="viewingBooking"
-        :show-user-info="authStore.isAdmin"
+        :show-user-info="isAdmin || false"
         @close="viewingBooking = null"
       />
     </div>
@@ -641,6 +641,10 @@ export default {
       return bookings.value.filter((b) => b.status === 'cancelled').length
     })
 
+    const isAdmin = computed(() => {
+      return authStore && authStore.user && authStore.isAdmin === true
+    })
+
     const resetFilters = () => {
       filters.value = {
         search: '',
@@ -769,6 +773,7 @@ export default {
       viewBooking,
       showSuccess,
       showError,
+      isAdmin,
     }
   },
 }
